@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 export function Nav() {
-    const [openAbout, setOpenAbout] = useState(true);
+    const [openAbout, setOpenAbout] = useState(false);
     const pathName = usePathname();
 
     useEffect(() => {
@@ -42,7 +42,7 @@ export function Nav() {
                     </button>
                 </div>
             ) : (
-                <div className={`z-50 fixed bottom-4 sm:top-0 w-full h-[${height}rem] inset-x-0 bg-white/80`}>
+                <div className={`z-20 fixed max-sm:bottom-4 sm:top-0 w-full h-[${height}rem] inset-x-0 bg-white/80`}>
                     <div className="flex mx-auto items-center justify-center gap-4 h-full">
                         <button onClick={() => setOpenAbout((v) => !v)} className={openAbout ? "font-bold" : ""}>
                             About
