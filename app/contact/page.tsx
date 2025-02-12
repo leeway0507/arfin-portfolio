@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Nav } from "../nav";
 
 export default function Page() {
     return (

@@ -2,14 +2,12 @@
 
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 export function Nav() {
     const [openAbuout, setOpenAbout] = useState(false);
     const pathName = usePathname();
-    // useEffect(() => {
-    //     setOpenAbout(false);
-    // }, [pathName]);
+
     return (
         <>
             <div className="w-full relative h-[3rem] animate-fade">
