@@ -6,11 +6,11 @@ export default async function Project(props: { params: Params }) {
     const projectName = params.project;
 
     return (
-        <div className="flex flex-col items-center pt-8">
-            <div>
-                <div className="text-5xl font-bold text-left">{projectName}</div>
-                <div className="pt-4 max-w-md">
-                    <Image src="/project/life/1.jpg" alt={`${projectName}`} />
+        <div className="w-full h-full flex flex-col items-center">
+            <div className="w-full max-w-[640px] h-full">
+                <div className="text-5xl font-bold">{projectName}</div>
+                <div className="pt-4 relative w-full h-full">
+                    <Image src="/project/life/1.jpg" alt={`${projectName}`} fill style={{ objectFit: "cover" }} />
                 </div>
             </div>
         </div>

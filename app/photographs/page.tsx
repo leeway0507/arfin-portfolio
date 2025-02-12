@@ -19,7 +19,7 @@ export default async function Page() {
         },
     ];
     return (
-        <div className="flex items-center lg:justify-center py-8 flex-col lg:flex-row">
+        <div className="flex items-center lg:justify-center flex-col lg:flex-row">
             {x.map((x) => (
                 <Card key={x.name} src={x.src} year={x.year} name={x.name} />
             ))}
