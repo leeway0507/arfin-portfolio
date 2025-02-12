@@ -21,28 +21,26 @@ export function Nav() {
         };
     }, [openAbout]);
 
-    const height = "3";
+    const height = "h-[3rem]";
     return (
         <>
             {pathName !== "/" && (
-                <div
-                    className={`z-50 absolute top-0 left-0 px-[2rem] flex items-center justify-start h-[${height}rem]`}
-                >
+                <div className={`z-50 absolute top-0 left-0 px-[2rem] flex items-center justify-start ${height}`}>
                     <Link href={"/"} className={`font-bold flex items-center`}>
                         Arfin Yoon
                     </Link>
                 </div>
             )}
             {openAbout ? (
-                <div
-                    className={`z-50 absolute top-0 right-0 pe-[2rem] flex items-center justify-end h-[${height}rem] `}
-                >
+                <div className={`z-50 absolute top-0 right-0 pe-[2rem] flex items-center justify-end ${height}`}>
                     <button onClick={() => setOpenAbout((v) => !v)} className={`font-bold`}>
                         Close
                     </button>
                 </div>
             ) : (
-                <div className={`z-20 fixed max-sm:bottom-4 sm:top-0 w-full h-[${height}rem] inset-x-0 bg-white/80`}>
+                <div
+                    className={`z-20 fixed sm:absolute max-sm:bottom-4 sm:top-0 w-full ${height} inset-x-0 bg-white/80`}
+                >
                     <div className="flex mx-auto items-center justify-center gap-4 h-full">
                         <button onClick={() => setOpenAbout((v) => !v)} className={openAbout ? "font-bold" : ""}>
                             About
