@@ -4,19 +4,9 @@ import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { div } from "motion/react-client";
 import About from "./about";
 import Contact from "./contact";
 
-function hoverItems() {
-    return (
-        <div className="flex gap-2">
-            <div>Day</div>
-            <div>Line</div>
-            <div>Life</div>
-        </div>
-    );
-}
 export function Nav() {
     const [openAbout, setOpenAbout] = useState(false);
     const [openContact, setOpenContact] = useState(false);

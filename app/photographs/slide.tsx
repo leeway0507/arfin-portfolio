@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 
-export default function Card({ src, year, name }: { src: string; year: string; name: string }) {
+export default function Card({ src, name }: { src: string; name: string }) {
     const [isLoading, setIsloading] = useState(true);
     return (
         <Link

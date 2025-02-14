@@ -21,7 +21,7 @@ export default async function Page() {
     return (
         <div className="flex items-center lg:justify-center flex-col lg:flex-row gap-x-4 pt-12">
             {x.map((x) => (
-                <Card key={x.name} src={x.src} year={x.year} name={x.name} />
+                <Card key={x.name} src={x.src} name={x.name} />
             ))}
         </div>
     );

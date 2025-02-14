@@ -5,6 +5,7 @@ import { Nav } from "../components/nav/nav";
 
 // Font files can be colocated inside of `app`
 const arimo = Arimo({
+    subsets: ["latin"],
     display: "swap",
 });
 
