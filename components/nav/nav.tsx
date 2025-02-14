@@ -27,25 +27,24 @@ export function Nav() {
         };
     }, [openModal]);
 
+    const closeModal = () => {
+        setOpenAbout(false);
+        setOpenContact(false);
+    };
+
     const height = "h-[2.1rem] sm:h-[3rem]";
     return (
         <>
             {pathName !== "/" && (
                 <div className={`z-50 absolute top-0 left-0 px-[2rem] flex items-center justify-start ${height}`}>
-                    <Link href={"/"} className={`font-black flex items-center`}>
+                    <Link href={"/"} className={`font-black flex items-center`} onClick={closeModal}>
                         Arfin Yoon
                     </Link>
                 </div>
             )}
             {openModal ? (
                 <div className={`z-50 absolute top-0 right-0 pe-[2rem] flex items-center justify-end ${height}`}>
-                    <button
-                        onClick={() => {
-                            setOpenAbout(false);
-                            setOpenContact(false);
-                        }}
-                        className={`font-black`}
-                    >
+                    <button onClick={closeModal} className={`font-black`}>
                         Close
                     </button>
                 </div>
