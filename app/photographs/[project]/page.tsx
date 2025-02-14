@@ -1,20 +1,28 @@
-import Image from "next/image";
+import EmblaCarousel from "@/components/embla/embla-carousel";
+import { EmblaOptionsType } from "embla-carousel";
+import { readdir } from "fs/promises";
 type Params = Promise<{ project: string }>;
 
 export default async function Project(props: { params: Params }) {
     const params = await props.params;
     const projectName = params.project;
 
-    return (
-        <div className="w-full h-full flex flex-col items-center">
-            <div className="w-full max-w-[640px] h-full">
-                <div className="text-5xl font-bold">{projectName}</div>
-                <div className="pt-4 relative w-full h-full">
-                    <Image src="/project/life/1.jpg" alt={`${projectName}`} fill style={{ objectFit: "cover" }} />
-                </div>
-            </div>
-        </div>
-    );
+    const files = await readdir(`./public/project/${projectName}`);
+    const slides = files
+        .filter((f) => f !== ".DS_Store")
+        .map((f) => {
+            const [order, ...name] = f.replace(".jpeg", "").split("_");
+            return {
+                order: parseInt(order),
+                src: `/project/${projectName}/${f}`,
+                alt: name.join(","),
+            };
+        })
+        .sort((a, b) => a.order - b.order);
+
+    const OPTIONS: EmblaOptionsType = { loop: true, duration: 30 };
+
+    return <EmblaCarousel slides={slides} options={OPTIONS} />;
 }
 
 export async function generateStaticParams() {
