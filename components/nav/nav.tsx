@@ -88,19 +88,17 @@ export function Nav() {
             )}
             <AnimatePresence>
                 {openModal && (
-                    <div
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
                         className={`absolute z-10 top-0 inset-x-0 w-[calc(100dvw)] h-[calc(100dvh)] backdrop-blur-xl py-2 bg-white/50 overflow-scroll`}
                     >
-                        <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.5 }}
-                            className="pt-[3rem] px-[2rem] flex justify-center flex-col w-full text-center "
-                        >
+                        <div className="pt-[3rem] px-[2rem] flex justify-center flex-col w-full text-center ">
                             {openAbout ? <About /> : openContact && <Contact />}
-                        </motion.div>
-                    </div>
+                        </div>
+                    </motion.div>
                 )}
             </AnimatePresence>
         </>
