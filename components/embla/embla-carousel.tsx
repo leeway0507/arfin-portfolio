@@ -19,7 +19,6 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
     const { slides, options } = props;
     const [emblaRef, emblaApi] = useEmblaCarousel(options, [Fade()]);
     const [isImageLoaded, setIsImageLoaded] = useState(true);
-    console.log(isImageLoaded);
 
     const { prevBtnDisabled, nextBtnDisabled, onPrevButtonClick, onNextButtonClick } = usePrevNextButtons(emblaApi);
 
@@ -36,8 +35,8 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                                 width={0}
                                 height={0}
                                 sizes="100vw"
-                                onLoadingComplete={(image) => {
-                                    image.classList.remove("opacity-0");
+                                onLoad={(image) => {
+                                    image.currentTarget.classList.remove("opacity-0");
                                     setIsImageLoaded(false);
                                 }}
                             />

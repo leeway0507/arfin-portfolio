@@ -19,7 +19,7 @@ export default function Card({ src, name }: { src: string; name: string }) {
                     height={0}
                     sizes="100vw"
                     style={{ height: "100%", width: "auto", objectFit: "contain" }}
-                    onLoadingComplete={() => setIsloading(false)}
+                    onLoad={() => setIsloading(false)}
                 />
             </div>
             <div className="font-medium text-lg ">{name}</div>

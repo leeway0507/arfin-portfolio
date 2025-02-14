@@ -25,7 +25,7 @@ export function Nav() {
         return () => {
             document.documentElement.style.overflow = "";
         };
-    }, [openAbout]);
+    }, [openModal]);
 
     const height = "h-[2.1rem] sm:h-[3rem]";
     return (
