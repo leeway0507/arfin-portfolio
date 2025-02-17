@@ -32,7 +32,7 @@ export function Nav() {
         setOpenContact(false);
     };
 
-    const height = "h-[2.1rem] sm:h-[3rem]";
+    const height = "h-[2.1rem] sm:h-[4rem]";
     return (
         <>
             {pathName !== "/" && (
@@ -58,15 +58,10 @@ export function Nav() {
                     <div className={`z-20 fixed sm:absolute max-sm:bottom-4 sm:top-0 w-full inset-x-0 `}>
                         <div className={`rounded-2xl mx-4 bg-white/60 backdrop-blur-sm ${height}`}>
                             <div className="flex mx-auto items-center justify-center gap-4 h-full">
-                                <button
-                                    onClick={() => setOpenAbout((v) => !v)}
-                                    className={openAbout ? "font-medium" : ""}
-                                >
-                                    About
-                                </button>
+                                <button onClick={() => setOpenAbout((v) => !v)}>About</button>
                                 <Link
                                     href={"/photographs"}
-                                    className={pathName.includes("/photographs") ? "font-medium" : ""}
+                                    className={pathName.includes("/photographs") ? "font-semibold" : ""}
                                 >
                                     Photograhps
                                 </Link>

@@ -9,20 +9,18 @@ export default function Card({ src, name }: { src: string; name: string }) {
     return (
         <Link
             href={`/photographs/${name}`}
-            className={`relative transition-opacity duration-[0.5s] ${isLoading ? "opacity-0" : "opacity-100"}`}
+            className={`grow relative transition-opacity duration-[0.5s]  ${isLoading ? "opacity-0" : "opacity-100"}`}
         >
-            <div className="relative bg-gray-200 w-full ">
+            <div className="relative aspect-[51/64] ">
                 <Image
                     src={src}
                     alt={name}
-                    width={0}
-                    height={0}
-                    sizes="100vw"
-                    style={{ height: "auto", width: "100%", objectFit: "contain" }}
+                    fill
+                    className="h-auto w-full object-contain"
                     onLoad={() => setIsloading(false)}
                 />
             </div>
-            <div className="font-medium text-lg ">{name}</div>
+            <div className="font-medium text-lg">{name}</div>
         </Link>
     );
 }

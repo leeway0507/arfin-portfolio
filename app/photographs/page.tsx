@@ -1,4 +1,4 @@
-import Card from "./slide";
+import Card from "./card";
 
 export default async function Page() {
     const thumbnails = [
@@ -16,7 +16,7 @@ export default async function Page() {
         },
     ];
     return (
-        <div className="flex lg:justify-center flex-col lg:flex-row gap-x-4 pt-12 grow h-full">
+        <div className="flex flex-col sm:justify-center sm:flex-row gap-x-4 pt-12 grow w-full mx-auto pb-24">
             {thumbnails.map((thumbnail) => (
                 <Card key={thumbnail.name} src={thumbnail.src} name={thumbnail.name} />
             ))}

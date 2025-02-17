@@ -31,7 +31,7 @@ export default async function Project(props: { params: Params }) {
             return {
                 order: parseInt(order),
                 src: `/project/${projectName}/${f}`,
-                alt: name.join(","),
+                alt: name.join(", "),
             };
         })
         .sort((a, b) => a.order - b.order);
