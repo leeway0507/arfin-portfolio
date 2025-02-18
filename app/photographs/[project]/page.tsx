@@ -1,3 +1,4 @@
+import CustomCarousel from "@/components/custom-carousel/carousel";
 import EmblaCarousel from "@/components/embla/embla-carousel";
 import { EmblaOptionsType } from "embla-carousel";
 type Params = Promise<{ project: string }>;
@@ -15,8 +16,17 @@ const FILE_NAME = {
         "9_Aivita_2023.jpeg",
         "10_Subi_2025.jpeg",
     ],
-    Line: ["1.jpeg", "2.jpeg", "3.jpeg", "4.jpeg", "5.jpeg", "6.jpeg", "7.jpeg", "8.jpeg"],
-    Life: ["1.jpeg", "2.jpeg", "3.jpeg", "4.jpeg"],
+    Line: [
+        "1_Maria_2024.jpeg",
+        "2_Maria_2024.jpeg",
+        "3_Maria_2024.jpeg",
+        "4_Maria_2024.jpeg",
+        "5_Maria_2024.jpeg",
+        "6_Maria_2024.jpeg",
+        "7_Maria_2024.jpeg",
+        "8_Maria_2024.jpeg",
+    ],
+    Life: ["1_Dazzling_2022.jpeg", "2_Fairy_2023.jpeg", "3_Light_2024.jpeg", "4_Purple Flower_2024.jpeg"],
 };
 
 export default async function Project(props: { params: Params }) {
@@ -36,9 +46,9 @@ export default async function Project(props: { params: Params }) {
         })
         .sort((a, b) => a.order - b.order);
 
-    const OPTIONS: EmblaOptionsType = { loop: true, duration: 30 };
+    // const OPTIONS: EmblaOptionsType = { loop: true, duration: 30 };
 
-    return <EmblaCarousel slides={slides} options={OPTIONS} />;
+    return <CustomCarousel slides={slides} />;
 }
 
 export async function generateStaticParams() {

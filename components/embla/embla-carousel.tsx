@@ -23,7 +23,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
     const { prevBtnDisabled, nextBtnDisabled, onPrevButtonClick, onNextButtonClick } = usePrevNextButtons(emblaApi);
 
     return (
-        <div className="embla">
+        <div className="embla max-w-4xl">
             <div className="embla__viewport" ref={emblaRef}>
                 <div className="embla__container">
                     {slides.map((img) => (

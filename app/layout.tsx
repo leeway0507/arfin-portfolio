@@ -19,10 +19,10 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" className="px-[2rem] relative">
-            <body className={`${arimo.className} antialiased h-dvh pt-[3rem] sm:pb-0 pb-[3rem]`}>
+        <html lang="en" className="px-[2rem] relative ">
+            <body className={`${arimo.className} antialiased flex pt-[4rem] sm:pb-0`}>
                 <Nav />
-                {children}
+                <div className="min-h-[calc(100dvh-4rem)] w-full">{children}</div>
             </body>
         </html>
     );
