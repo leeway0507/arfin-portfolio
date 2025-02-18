@@ -11,16 +11,16 @@ export default function Card({ src, name }: { src: string; name: string }) {
             width: number;
             height: number;
         };
-        coverRect: DOMRect;
+        coverRect: DOMRectReadOnly;
     }>({
         imageSize: { width: 0, height: 0 },
-        coverRect: new DOMRect(),
+        coverRect: {} as DOMRectReadOnly,
     });
     const imageCoverRef = useRef<HTMLDivElement>(null);
     const imageRef = useRef<HTMLImageElement>(null);
 
     function getContainedSize(img: EventTarget & HTMLImageElement) {
-        let ratio = img.naturalWidth / img.naturalHeight;
+        const ratio = img.naturalWidth / img.naturalHeight;
         let width = img.height * ratio;
         let height = img.height;
         if (width > img.width) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
@@ -19,10 +19,10 @@ const CustomCarousel: React.FC<PropType> = (props) => {
             width: number;
             height: number;
         };
-        coverRect: DOMRect;
+        coverRect: DOMRectReadOnly;
     }>({
         imageSize: { width: 0, height: 0 },
-        coverRect: new DOMRect(),
+        coverRect: {} as DOMRectReadOnly,
     });
     const imageCoverRef = useRef<HTMLDivElement>(null);
     const imageRef = useRef<HTMLImageElement>(null);
@@ -42,7 +42,7 @@ const CustomCarousel: React.FC<PropType> = (props) => {
     };
 
     function getContainedSize(img: EventTarget & HTMLImageElement) {
-        let ratio = img.naturalWidth / img.naturalHeight;
+        const ratio = img.naturalWidth / img.naturalHeight;
         let width = img.height * ratio;
         let height = img.height;
         if (width > img.width) {
@@ -84,7 +84,7 @@ const CustomCarousel: React.FC<PropType> = (props) => {
             window.removeEventListener("keydown", handleKeydown);
             window.removeEventListener("resize", handleResize);
         };
-    }, []);
+    }, [handleKeydown, handleResize]);
 
     return (
         <div className="w-full h-full">
