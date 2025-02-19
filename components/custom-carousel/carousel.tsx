@@ -24,10 +24,14 @@ const CustomCarousel: React.FC<PropType> = (props) => {
         imageSize: { width: 0, height: 0 },
         coverRect: {} as DOMRectReadOnly,
     });
+
+    const [isImageLoading, setIsImageLoading] = useState(true);
+
     const imageCoverRef = useRef<HTMLDivElement>(null);
     const imageRef = useRef<HTMLImageElement>(null);
 
     const showPrevImage = () => {
+        setIsImageLoading(true);
         setImageIndex((idx) => {
             if (idx === 0) return slides.length - 1;
             return idx - 1;
@@ -35,6 +39,7 @@ const CustomCarousel: React.FC<PropType> = (props) => {
     };
 
     const showNextImage = () => {
+        setIsImageLoading(true);
         setImageIndex((idx) => {
             if (idx === slides.length - 1) return 0;
             return idx + 1;
@@ -87,14 +92,14 @@ const CustomCarousel: React.FC<PropType> = (props) => {
     }, [handleKeydown, handleResize]);
 
     return (
-        <div className="w-full h-full">
+        <div className="w-full h-[calc(100dvh-4rem)] flex items-start">
             <motion.div
                 key={imageIndex}
-                initial={{ opacity: 0 }}
+                initial={{ opacity: 0.0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4 }}
-                className=" w-full pt-[2rem] h-[85%] flex flex-col items-center justify-center"
+                className=" w-full h-full py-4 sm:h-[95%] flex flex-col items-center"
                 ref={imageCoverRef}
             >
                 <Image
@@ -102,6 +107,7 @@ const CustomCarousel: React.FC<PropType> = (props) => {
                     width={0}
                     height={0}
                     onLoad={(image) => {
+                        setIsImageLoading(false);
                         if (imageCoverRef.current) {
                             const imageSize = getContainedSize(image.currentTarget);
                             setImageMargin({
@@ -110,25 +116,9 @@ const CustomCarousel: React.FC<PropType> = (props) => {
                             });
                         }
                     }}
-                    className="w-auto h-full object-contain"
+                    className="w-auto h-full max-h-[calc(100dvh-8rem)] object-contain"
                     src={slides[imageIndex].src}
                     alt={slides[imageIndex].alt}
-                />
-                <div
-                    onClick={showPrevImage}
-                    className="absolute hover:bg-black/10 w-24 transition-all duration-[0.3s] cursor-pointer"
-                    style={{
-                        left: `${imageMargin.coverRect.left}px`,
-                        height: `${imageMargin.coverRect.height}px`,
-                    }}
-                />
-                <div
-                    onClick={showNextImage}
-                    className="absolute hover:bg-black/10 w-24 transition-all duration-[0.3s] cursor-pointer"
-                    style={{
-                        right: `${imageMargin.coverRect.left}px`,
-                        height: `${imageMargin.coverRect.height}px`,
-                    }}
                 />
 
                 <div
@@ -139,48 +129,23 @@ const CustomCarousel: React.FC<PropType> = (props) => {
                             (imageMargin.coverRect.height - imageMargin.imageSize.height) / 2 +
                             imageMargin.imageSize.height
                         }px`,
+                        opacity: isImageLoading ? 0 : 100,
                     }}
-                    className="absolute"
+                    className="absolute text-sm"
                 >
                     {slides[imageIndex].alt}
                 </div>
             </motion.div>
             <div
+                className="absolute flex w-full inset-x-0 my-4"
                 style={{
-                    top: `${imageMargin.coverRect.top + imageMargin.coverRect.height}px`,
+                    height: `${imageMargin.coverRect.height}px`,
                 }}
-                className="absolute pt-8 left-0 right-0 flex justify-center space-x-4"
             >
-                <PrevButton onClickFn={showPrevImage} />
-                <NextButton onClickFn={showNextImage} />
+                <div onClick={showPrevImage} className="flex basis-1/2 cursor-pointer" />
+                <div onClick={showNextImage} className="flex basis-1/2 cursor-pointer" />
             </div>
         </div>
-    );
-};
-
-export const PrevButton: React.FC<{ onClickFn: () => void }> = (props) => {
-    return (
-        <button className="embla__button embla__button--prev" type="button" onClick={props.onClickFn}>
-            <svg className="w-4 h-4" viewBox="0 0 532 532">
-                <path
-                    fill="currentColor"
-                    d="M355.66 11.354c13.793-13.805 36.208-13.805 50.001 0 13.785 13.804 13.785 36.238 0 50.034L201.22 266l204.442 204.61c13.785 13.805 13.785 36.239 0 50.044-13.793 13.796-36.208 13.796-50.002 0a5994246.277 5994246.277 0 0 0-229.332-229.454 35.065 35.065 0 0 1-10.326-25.126c0-9.2 3.393-18.26 10.326-25.2C172.192 194.973 332.731 34.31 355.66 11.354Z"
-                />
-            </svg>
-        </button>
-    );
-};
-
-export const NextButton: React.FC<{ onClickFn: () => void }> = (props) => {
-    return (
-        <button className="embla__button embla__button--next" type="button" onClick={props.onClickFn}>
-            <svg className="w-4 h-4" viewBox="0 0 532 532">
-                <path
-                    fill="currentColor"
-                    d="M176.34 520.646c-13.793 13.805-36.208 13.805-50.001 0-13.785-13.804-13.785-36.238 0-50.034L330.78 266 126.34 61.391c-13.785-13.805-13.785-36.239 0-50.044 13.793-13.796 36.208-13.796 50.002 0 22.928 22.947 206.395 206.507 229.332 229.454a35.065 35.065 0 0 1 10.326 25.126c0 9.2-3.393 18.26-10.326 25.2-45.865 45.901-206.404 206.564-229.332 229.52Z"
-                />
-            </svg>
-        </button>
     );
 };
 

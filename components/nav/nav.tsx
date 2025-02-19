@@ -36,32 +36,38 @@ export function Nav() {
     return (
         <>
             {pathName !== "/" && (
-                <div className={`z-50 absolute top-0 left-0 px-[2rem] flex items-center justify-start ${height}`}>
-                    <Link href={"/"} className={`font-black flex items-center`} onClick={closeModal}>
+                <div
+                    className={`z-50 absolute top-0 left-0 px-[1rem] sm:px-[2rem] flex items-center justify-start ${height}`}
+                >
+                    <Link href={"/"} className={`font-bold flex items-center`} onClick={closeModal}>
                         Arfin Yoon
                     </Link>
                 </div>
             )}
             {openModal ? (
-                <div className={`z-50 absolute top-0 right-0 pe-[2rem] flex items-center justify-end ${height}`}>
-                    <button onClick={closeModal} className={`font-black`}>
+                <div
+                    className={`z-50 absolute top-0 right-0 pe-[1rem] sm:pe-[2rem] flex items-center justify-end ${height}`}
+                >
+                    <button onClick={closeModal} className={`font-bold`}>
                         Close
                     </button>
                 </div>
             ) : (
                 <>
-                    <div className={`z-50 absolute top-0 right-0 pe-[2rem] flex items-center justify-end ${height}`}>
+                    <div
+                        className={`z-50 absolute top-0 right-0 px-[1rem] sm:pe-[2rem] flex items-center justify-end ${height} text-black/50`}
+                    >
                         <button onClick={() => setOpenContact((v) => !v)} className={openContact ? "font-medium" : ""}>
                             Contact
                         </button>
                     </div>
                     <div className={`z-20 fixed sm:absolute max-sm:bottom-4 sm:top-0 w-full inset-x-0 `}>
                         <div className={`rounded-2xl mx-4 bg-white/60 backdrop-blur-sm ${height}`}>
-                            <div className="flex mx-auto items-center justify-center gap-4 h-full">
+                            <div className="flex mx-auto items-center justify-center gap-4 h-full text-black/50 ">
                                 <button onClick={() => setOpenAbout((v) => !v)}>About</button>
                                 <Link
                                     href={"/photographs"}
-                                    className={pathName.includes("/photographs") ? "font-semibold" : ""}
+                                    className={pathName.includes("/photographs") ? "text-black" : "text-black/50"}
                                 >
                                     Photograhps
                                 </Link>

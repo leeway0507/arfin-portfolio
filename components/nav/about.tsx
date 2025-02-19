@@ -16,7 +16,7 @@ export default function About() {
             <div>
                 For Arfin, photography is not just about creating images—it’s about telling stories. With each frame, he
                 seeks to weave narratives that resonate. As he continues his journey in fashion photography, he remains
-                committed to exploring new creative possibilities and sharing his unique perspective with the world
+                committed to exploring new creative possibilities and sharing his unique perspective with the world.
             </div>
         </div>
     );

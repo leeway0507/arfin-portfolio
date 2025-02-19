@@ -5,7 +5,38 @@ import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
 import { motion } from "motion/react";
 
-export default function Card({ src, name }: { src: string; name: string }) {
+export function MobileCard({ src, name }: { src: string; name: string }) {
+    const [isImageLoading, setIsImageLoading] = useState(true);
+
+    return (
+        <Link href={`/photographs/${name}`} className={`w-full h-full`}>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="w-full h-full"
+            >
+                <div className="relative flex flex-col items-center justify-center">
+                    <Image
+                        src={src}
+                        alt={name}
+                        width={0}
+                        height={0}
+                        onLoad={() => {
+                            setIsImageLoading(false);
+                        }}
+                        className="w-full h-auto object-contain"
+                    />
+                </div>
+                <div style={{ opacity: isImageLoading ? 0 : 100 }} className="font-medium">
+                    {name}
+                </div>
+            </motion.div>
+        </Link>
+    );
+}
+export function PcCard({ src, name }: { src: string; name: string }) {
     const [imageMargin, setImageMargin] = useState<{
         imageSize: {
             width: number;
@@ -16,6 +47,7 @@ export default function Card({ src, name }: { src: string; name: string }) {
         imageSize: { width: 0, height: 0 },
         coverRect: {} as DOMRectReadOnly,
     });
+    const [isImageLoading, setIsImageLoading] = useState(true);
     const imageCoverRef = useRef<HTMLDivElement>(null);
     const imageRef = useRef<HTMLImageElement>(null);
 
@@ -51,46 +83,50 @@ export default function Card({ src, name }: { src: string; name: string }) {
     }, []);
 
     return (
-        <Link href={`/photographs/${name}`} className={`grow pt-[2rem]`}>
+        <Link href={`/photographs/${name}`} className={`basis-1/3 w-full`}>
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4 }}
-                className="w-full h-[85%] flex flex-col items-center justify-center aspect-[51/64]"
+                className="w-full h-full"
                 ref={imageCoverRef}
             >
-                <Image
-                    src={src}
-                    alt={name}
-                    ref={imageRef}
-                    width={0}
-                    height={0}
-                    onLoad={(image) => {
-                        if (imageCoverRef.current) {
-                            const imageSize = getContainedSize(image.currentTarget);
-                            setImageMargin({
-                                imageSize,
-                                coverRect: image.currentTarget.getBoundingClientRect(),
-                            });
-                        }
+                <div className="w-full h-full flex flex-col items-center justify-center aspect-[51/64]">
+                    <Image
+                        src={src}
+                        alt={name}
+                        ref={imageRef}
+                        width={0}
+                        height={0}
+                        onLoad={(image) => {
+                            if (imageCoverRef.current) {
+                                const imageSize = getContainedSize(image.currentTarget);
+                                setIsImageLoading(false);
+                                setImageMargin({
+                                    imageSize,
+                                    coverRect: image.currentTarget.getBoundingClientRect(),
+                                });
+                            }
+                        }}
+                        className="w-auto h-full object-contain"
+                    />
+                </div>
+                <div
+                    style={{
+                        left: `${imageMargin.coverRect.left}px`,
+                        top: `${
+                            imageMargin.coverRect.top +
+                            (imageMargin.coverRect.height - imageMargin.imageSize.height) / 2 +
+                            imageMargin.imageSize.height
+                        }px`,
+                        opacity: isImageLoading ? 0 : 100,
                     }}
-                    className="w-auto h-full object-contain"
-                />
+                    className="absolute font-medium"
+                >
+                    {name}
+                </div>
             </motion.div>
-            <div
-                style={{
-                    left: `${imageMargin.coverRect.left}px`,
-                    top: `${
-                        imageMargin.coverRect.top +
-                        (imageMargin.coverRect.height - imageMargin.imageSize.height) / 2 +
-                        imageMargin.imageSize.height
-                    }px`,
-                }}
-                className="absolute font-medium text-lg"
-            >
-                {name}
-            </div>
         </Link>
     );
 }

@@ -4,28 +4,28 @@ type Params = Promise<{ project: string }>;
 
 const FILE_NAME = {
     Day: [
-        "1_Carla_2024.jpeg",
-        "2_Sarah_2024.jpeg",
-        "3_Charlotte_2025.jpeg",
-        "4_Sia_2024.jpeg",
-        "5_Polina_2024.jpeg",
-        "6_Marta_2024.jpeg",
-        "7_Gbemi_2025.jpeg",
-        "8_Saicou_2024.jpeg",
-        "9_Aivita_2023.jpeg",
-        "10_Subi_2025.jpeg",
+        "1_Carla_2024.webp",
+        "2_Sarah_2024.webp",
+        "3_Charlotte_2025.webp",
+        "4_Sia_2024.webp",
+        "5_Polina_2024.webp",
+        "6_Marta_2024.webp",
+        "7_Gbemi_2025.webp",
+        "8_Saicou_2024.webp",
+        "9_Aivita_2023.webp",
+        "10_Subi_2025.webp",
     ],
     Line: [
-        "1_Maria_2024.jpeg",
-        "2_Maria_2024.jpeg",
-        "3_Maria_2024.jpeg",
-        "4_Maria_2024.jpeg",
-        "5_Maria_2024.jpeg",
-        "6_Maria_2024.jpeg",
-        "7_Maria_2024.jpeg",
-        "8_Maria_2024.jpeg",
+        "1_Maria_2024.webp",
+        "2_Maria_2024.webp",
+        "3_Maria_2024.webp",
+        "4_Maria_2024.webp",
+        "5_Maria_2024.webp",
+        "6_Maria_2024.webp",
+        "7_Maria_2024.webp",
+        "8_Maria_2024.webp",
     ],
-    Life: ["1_Dazzling_2022.jpeg", "2_Fairy_2023.jpeg", "3_Light_2024.jpeg", "4_Purple Flower_2024.jpeg"],
+    Life: ["1_Dazzling_2022.webp", "2_Fairy_2023.webp", "3_Light_2024.webp", "4_Purple Flower_2024.webp"],
 };
 
 export default async function Project(props: { params: Params }) {
@@ -36,7 +36,7 @@ export default async function Project(props: { params: Params }) {
     const slides = files
         .filter((f) => f !== ".DS_Store")
         .map((f) => {
-            const [order, ...name] = f.replace(".jpeg", "").split("_");
+            const [order, ...name] = f.replace(".webp", "").split("_");
             return {
                 order: parseInt(order),
                 src: `/project/${projectName}/${f}`,
