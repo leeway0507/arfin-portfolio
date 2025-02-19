@@ -1,4 +1,4 @@
-import CustomCarousel from "@/components/custom-carousel/carousel";
+import EmblaCarousel from "@/components/embla/embla-carousel";
 
 type Params = Promise<{ project: string }>;
 
@@ -45,7 +45,8 @@ export default async function Project(props: { params: Params }) {
         })
         .sort((a, b) => a.order - b.order);
 
-    return <CustomCarousel slides={slides} />;
+    const options = { loop: true, duration: 30 };
+    return <EmblaCarousel slides={slides} options={options} />;
 }
 
 export async function generateStaticParams() {
