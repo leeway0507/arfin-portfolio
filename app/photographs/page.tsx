@@ -1,7 +1,5 @@
-import { EmblaCarouselPc, EmblaCarouselMobile } from "@/components/embla/embla-carousel";
+import { EmblaCarouselPc } from "@/components/embla/embla-carousel";
 import { EmblaOptionsType } from "embla-carousel";
-
-type Params = Promise<{ project: string }>;
 
 const FILE_NAME = [
     "Day",
@@ -31,13 +29,10 @@ const FILE_NAME = [
     "Life/4_Purple Flower_2024.webp",
 ];
 
-export default async function Project(props: { params: Params }) {
-    const params = await props.params;
-    const projectName = params.project;
-
+export default async function Project() {
     const slides = FILE_NAME.map((f) => {
         if (f.includes(".webp")) {
-            const [order, ...name] = f.replace(".webp", "").split("_");
+            const [, ...name] = f.replace(".webp", "").split("_");
             return {
                 src: `/project/${f}`,
                 alt: name.join(", "),

@@ -14,69 +14,6 @@ type PropType = {
     options?: EmblaOptionsType;
 };
 
-const EmblaCarouselMobile: React.FC<PropType> = (props) => {
-    const { slides, options } = props;
-    const [emblaRef, emblaApi] = useEmblaCarousel(options, []);
-
-    const { onPrevButtonClick, onNextButtonClick } = usePrevNextButtons(emblaApi);
-
-    return (
-        <div className="embla relative sm:hidden">
-            <div className="embla__viewport bg-red-200" ref={emblaRef}>
-                <div className="embla__container relative">
-                    {slides.map((img) => (
-                        <CardMobile
-                            key={img.src}
-                            alt={img.alt}
-                            src={img.src}
-                            onClickNext={onNextButtonClick}
-                            onClickPrev={onPrevButtonClick}
-                        />
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const CardMobile = ({
-    alt,
-    src,
-    onClickNext,
-    onClickPrev,
-}: {
-    alt: string;
-    src: string;
-    onClickPrev: () => void;
-    onClickNext: () => void;
-}) => {
-    const [isImageLoaded, setIsImageLoaded] = useState(true);
-    return (
-        <div className="z-0 embla__slide  overflow-hidden flex flex-col justify-center" key={src}>
-            {alt === "title" ? (
-                <div className="embla__slide flex items-center justify-center text-5xl" key={src}>
-                    {src}
-                </div>
-            ) : (
-                <Image
-                    className="w-full h-auto object-contain"
-                    src={src}
-                    alt={alt}
-                    width={0}
-                    height={0}
-                    onLoad={(image) => {
-                        setIsImageLoaded(false);
-                        image.currentTarget.classList.remove("opacity-0");
-                    }}
-                />
-            )}
-            <div className={`text-left text-sm ${isImageLoaded ? "hidden" : "block"}`}>
-                <div>{alt}</div>
-            </div>
-        </div>
-    );
-};
-
 const EmblaCarouselPc: React.FC<PropType> = (props) => {
     const { slides, options } = props;
     const [emblaRef, emblaApi] = useEmblaCarousel(options, []);
@@ -85,7 +22,7 @@ const EmblaCarouselPc: React.FC<PropType> = (props) => {
 
     return (
         <div className="embla relative ">
-            <div className="z-10 absolute flex w-full h-full bg-red-200/20">
+            <div className="z-10 absolute flex w-full h-full ">
                 <button onClick={onPrevButtonClick} className="basis-1/2" />
                 <button onClick={onNextButtonClick} className="basis-1/2" />
             </div>
@@ -184,4 +121,4 @@ function getContainedSize(img: EventTarget & HTMLImageElement) {
     };
 }
 
-export { EmblaCarouselPc, EmblaCarouselMobile };
+export { EmblaCarouselPc };
