@@ -22,9 +22,9 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" className="px-[0.5rem] sm:px-[2rem] relative ">
-            <body className={`${marionNormal.className}  antialiased flex pt-[4rem] sm:pb-0`}>
+            <body className={`${marionNormal.className} antialiased flex sm:pb-0`}>
                 <Nav />
-                <div className="min-h-[calc(100dvh-5rem)] w-full">{children}</div>
+                <div className="min-h-dvh w-full">{children}</div>
             </body>
         </html>
     );

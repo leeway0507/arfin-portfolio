@@ -32,9 +32,9 @@ export function Nav() {
         setOpenContact(false);
     };
 
-    const height = "h-[2.1rem] sm:h-[4rem]";
+    const height = "h-[2.1rem] sm:h-[4rem] ";
     return (
-        <>
+        <div className="z-50 fixed top-0 w-dvw inset-x-0">
             {pathName !== "/" && (
                 <div
                     className={`z-50 absolute top-0 left-0 px-[1rem] sm:px-[2rem] flex items-center justify-start ${height}`}
@@ -91,6 +91,6 @@ export function Nav() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </>
+        </div>
     );
 }
