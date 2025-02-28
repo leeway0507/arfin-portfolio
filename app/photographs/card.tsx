@@ -5,37 +5,6 @@ import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
 import { motion } from "motion/react";
 
-export function MobileCard({ src, name }: { src: string; name: string }) {
-    const [isImageLoading, setIsImageLoading] = useState(true);
-
-    return (
-        <Link href={`/photographs/${name}`} className={`w-full h-full`}>
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                className="w-full h-full"
-            >
-                <div className="relative flex flex-col items-center justify-center">
-                    <Image
-                        src={src}
-                        alt={name}
-                        width={0}
-                        height={0}
-                        onLoad={() => {
-                            setIsImageLoading(false);
-                        }}
-                        className="w-full h-auto object-contain"
-                    />
-                </div>
-                <div style={{ opacity: isImageLoading ? 0 : 100 }} className="font-medium">
-                    {name}
-                </div>
-            </motion.div>
-        </Link>
-    );
-}
 export function PcCard({ src, name }: { src: string; name: string }) {
     const [imageMargin, setImageMargin] = useState<{
         imageSize: {

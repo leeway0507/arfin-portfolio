@@ -62,7 +62,10 @@ const EmblaCarouselPc: React.FC<PropType> = (props) => {
                     <button onClick={onPrevButtonClick} className="basis-1/2" />
                     <button onClick={onNextButtonClick} className="basis-1/2" />
                 </div>
-                <button className=" absolute right-0 top-[4rem] z-30 p-4" onClick={() => setOpenAll((b) => !b)}>
+                <button
+                    className="sm:block hidden absolute right-0 top-[2rem] sm:top-[4rem] z-30 p-4"
+                    onClick={() => setOpenAll((b) => !b)}
+                >
                     {openAll ? <FaSquare /> : <FaTh />}
                 </button>
                 <div className="embla__viewport" ref={emblaRef}>
