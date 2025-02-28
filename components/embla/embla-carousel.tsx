@@ -6,6 +6,10 @@ import { usePrevNextButtons } from "./embla-carousel-arrow-botton";
 import Image from "next/image";
 import "./embla.css";
 import { useEffect, useRef, useState } from "react";
+import { motion } from "motion/react";
+import { FaTh } from "react-icons/fa";
+import { FaSquare } from "react-icons/fa";
+
 type PropType = {
     slides: {
         src: string;
@@ -17,23 +21,59 @@ type PropType = {
 const EmblaCarouselPc: React.FC<PropType> = (props) => {
     const { slides, options } = props;
     const [emblaRef, emblaApi] = useEmblaCarousel(options, []);
+    const [openAll, setOpenAll] = useState(false);
 
     const { onPrevButtonClick, onNextButtonClick } = usePrevNextButtons(emblaApi);
 
     return (
-        <div className="embla relative ">
-            <div className="z-10 absolute flex w-full h-full ">
-                <button onClick={onPrevButtonClick} className="basis-1/2" />
-                <button onClick={onNextButtonClick} className="basis-1/2" />
+        <>
+            <div className={` z-30 inset-0 absolute p-4 overflow-scroll bg-white ${openAll ? "block" : "hidden"}`}>
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="pt-[4rem] flex gap-2 sm:gap-4 flex-wrap "
+                >
+                    {slides.map((img) => {
+                        return (
+                            <div key={img.src} className="relative h-[100px] sm:h-[240px] w-auto">
+                                {img.alt === "title" ? (
+                                    <div className="aspect-[3/4] h-full  sm:text-xl flex justify-center items-center">
+                                        {img.src}
+                                    </div>
+                                ) : (
+                                    <Image
+                                        key={img.src}
+                                        src={img.src}
+                                        alt={img.alt}
+                                        width={0}
+                                        height={0}
+                                        className="h-full w-auto object-contain"
+                                    />
+                                )}
+                            </div>
+                        );
+                    })}
+                </motion.div>
             </div>
-            <div className="embla__viewport" ref={emblaRef}>
-                <div className="embla__container  relative">
-                    {slides.map((img) => (
-                        <CardPc key={img.src} alt={img.alt} src={img.src} />
-                    ))}
+            <div className="embla relative ">
+                <div className="z-10 absolute flex w-full h-full ">
+                    <button onClick={onPrevButtonClick} className="basis-1/2" />
+                    <button onClick={onNextButtonClick} className="basis-1/2" />
+                </div>
+                <button className=" absolute right-0 top-[4rem] z-30 p-4" onClick={() => setOpenAll((b) => !b)}>
+                    {openAll ? <FaSquare /> : <FaTh />}
+                </button>
+                <div className="embla__viewport" ref={emblaRef}>
+                    <div className="embla__container  relative">
+                        {slides.map((img) => (
+                            <CardPc key={img.src} alt={img.alt} src={img.src} />
+                        ))}
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 
