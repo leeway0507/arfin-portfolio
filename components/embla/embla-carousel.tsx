@@ -135,6 +135,7 @@ function CardPc({ alt, src }: { alt: string; src: string }) {
                         image.currentTarget.classList.remove("opacity-0");
                         handleResize();
                     }}
+                    priority
                 />
             )}
             <div
