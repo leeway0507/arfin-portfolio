@@ -5,9 +5,9 @@ export default async function Project() {
     const slides = FILE_NAME.map((f) => {
         if (f.includes('.webp')) {
             const [, ...name] = f.replace('.webp', '').split('_')
-            const cdnSrc = new URL(f, process.env.IMAGE_URL).href
+            const cdnSrc = new URL(f, process.env.NEXT_PUBLIC_IMAGE_URL).href
             return {
-                src: process.env.NODE_ENV === 'development' ? cdnSrc : `/project/${f}`,
+                src: cdnSrc,
                 alt: name.join(', '),
             }
         } else {
