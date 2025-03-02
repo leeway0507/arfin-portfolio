@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from 'next/link'
 
 export default function Contact() {
     return (
@@ -10,16 +10,19 @@ export default function Contact() {
                 <div>Korea</div>
                 <div className="mb-2">+82 10 6496 2353</div>
                 <div className="mb-2">
-                    studio:{" "}
-                    <Link className={"underline underline-offset-[5px]"} href={"mailto:arfinyoon@gmail.com"}>
+                    studio:{' '}
+                    <Link
+                        className={'underline underline-offset-[5px]'}
+                        href={'mailto:arfinyoon@gmail.com'}
+                    >
                         arfinyoon@gmail.com
                     </Link>
                 </div>
                 <div>
-                    instagram:{" "}
+                    instagram:{' '}
                     <Link
                         className="underline underline-offset-[5px]"
-                        href={"https://www.instagram.com/arfinyoon/"}
+                        href={'https://www.instagram.com/arfinyoon/'}
                         target="_blank"
                     >
                         arfinyoon
@@ -27,5 +30,5 @@ export default function Contact() {
                 </div>
             </div>
         </div>
-    );
+    )
 }

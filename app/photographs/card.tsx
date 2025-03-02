@@ -1,55 +1,55 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import Image from "next/image";
-import { useRef, useState, useEffect } from "react";
-import { motion } from "motion/react";
+import Link from 'next/link'
+import Image from 'next/image'
+import { useRef, useState, useEffect } from 'react'
+import { motion } from 'motion/react'
 
 export function PcCard({ src, name }: { src: string; name: string }) {
     const [imageMargin, setImageMargin] = useState<{
         imageSize: {
-            width: number;
-            height: number;
-        };
-        coverRect: DOMRectReadOnly;
+            width: number
+            height: number
+        }
+        coverRect: DOMRectReadOnly
     }>({
         imageSize: { width: 0, height: 0 },
         coverRect: {} as DOMRectReadOnly,
-    });
-    const [isImageLoading, setIsImageLoading] = useState(true);
-    const imageCoverRef = useRef<HTMLDivElement>(null);
-    const imageRef = useRef<HTMLImageElement>(null);
+    })
+    const [isImageLoading, setIsImageLoading] = useState(true)
+    const imageCoverRef = useRef<HTMLDivElement>(null)
+    const imageRef = useRef<HTMLImageElement>(null)
 
     function getContainedSize(img: EventTarget & HTMLImageElement) {
-        const ratio = img.naturalWidth / img.naturalHeight;
-        let width = img.height * ratio;
-        let height = img.height;
+        const ratio = img.naturalWidth / img.naturalHeight
+        let width = img.height * ratio
+        let height = img.height
         if (width > img.width) {
-            width = img.width;
-            height = img.width / ratio;
+            width = img.width
+            height = img.width / ratio
         }
         return {
             width,
             height,
-        };
+        }
     }
 
     const handleResize = () => {
         if (imageCoverRef.current && imageRef.current) {
-            const imageSize = getContainedSize(imageRef.current);
+            const imageSize = getContainedSize(imageRef.current)
             setImageMargin({
                 imageSize,
                 coverRect: imageRef.current.getBoundingClientRect(),
-            });
+            })
         }
-    };
+    }
 
     useEffect(() => {
-        window.addEventListener("resize", handleResize);
+        window.addEventListener('resize', handleResize)
         return () => {
-            window.removeEventListener("resize", handleResize);
-        };
-    }, []);
+            window.removeEventListener('resize', handleResize)
+        }
+    }, [])
 
     return (
         <Link href={`/photographs/${name}`} className={`basis-1/3 w-full`}>
@@ -70,12 +70,12 @@ export function PcCard({ src, name }: { src: string; name: string }) {
                         height={0}
                         onLoad={(image) => {
                             if (imageCoverRef.current) {
-                                const imageSize = getContainedSize(image.currentTarget);
-                                setIsImageLoading(false);
+                                const imageSize = getContainedSize(image.currentTarget)
+                                setIsImageLoading(false)
                                 setImageMargin({
                                     imageSize,
                                     coverRect: image.currentTarget.getBoundingClientRect(),
-                                });
+                                })
                             }
                         }}
                         className="w-auto h-full object-contain"
@@ -97,5 +97,5 @@ export function PcCard({ src, name }: { src: string; name: string }) {
                 </div>
             </motion.div>
         </Link>
-    );
+    )
 }

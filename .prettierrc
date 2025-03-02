@@ -1,6 +1,14 @@
-
 {
-    "trailingComma": "es5",
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "useTabs": false,
     "tabWidth": 4,
-    "printWidth": 120
+    "printWidth": 100,
+    "arrowParens": "always",
+    "plugins": ["prettier"],
+    "extends": ["eslint:recommended", "plugin:react/recommended", "prettier"],
+    "rules": {
+        "prettier/prettier": "error"
+    }
 }

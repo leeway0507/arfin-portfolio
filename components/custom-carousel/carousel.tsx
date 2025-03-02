@@ -1,95 +1,95 @@
-"use client";
+'use client'
 
-import { motion } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { motion } from 'motion/react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 
 type PropType = {
     slides: {
-        src: string;
-        alt: string;
-    }[];
-};
+        src: string
+        alt: string
+    }[]
+}
 
 const CustomCarousel: React.FC<PropType> = (props) => {
-    const slides = props.slides;
-    const [imageIndex, setImageIndex] = useState(0);
+    const slides = props.slides
+    const [imageIndex, setImageIndex] = useState(0)
     const [imageMargin, setImageMargin] = useState<{
         imageSize: {
-            width: number;
-            height: number;
-        };
-        coverRect: DOMRectReadOnly;
+            width: number
+            height: number
+        }
+        coverRect: DOMRectReadOnly
     }>({
         imageSize: { width: 0, height: 0 },
         coverRect: {} as DOMRectReadOnly,
-    });
+    })
 
-    const [isImageLoading, setIsImageLoading] = useState(true);
+    const [isImageLoading, setIsImageLoading] = useState(true)
 
-    const imageCoverRef = useRef<HTMLDivElement>(null);
-    const imageRef = useRef<HTMLImageElement>(null);
+    const imageCoverRef = useRef<HTMLDivElement>(null)
+    const imageRef = useRef<HTMLImageElement>(null)
 
     const showPrevImage = () => {
-        setIsImageLoading(true);
+        setIsImageLoading(true)
         setImageIndex((idx) => {
-            if (idx === 0) return slides.length - 1;
-            return idx - 1;
-        });
-    };
+            if (idx === 0) return slides.length - 1
+            return idx - 1
+        })
+    }
 
     const showNextImage = () => {
-        setIsImageLoading(true);
+        setIsImageLoading(true)
         setImageIndex((idx) => {
-            if (idx === slides.length - 1) return 0;
-            return idx + 1;
-        });
-    };
+            if (idx === slides.length - 1) return 0
+            return idx + 1
+        })
+    }
 
     function getContainedSize(img: EventTarget & HTMLImageElement) {
-        const ratio = img.naturalWidth / img.naturalHeight;
-        let width = img.height * ratio;
-        let height = img.height;
+        const ratio = img.naturalWidth / img.naturalHeight
+        let width = img.height * ratio
+        let height = img.height
         if (width > img.width) {
-            width = img.width;
-            height = img.width / ratio;
+            width = img.width
+            height = img.width / ratio
         }
         return {
             width,
             height,
-        };
+        }
     }
 
     const handleKeydown = useCallback(
         (event: KeyboardEvent) => {
-            if (event.key === "ArrowLeft") {
-                showPrevImage();
+            if (event.key === 'ArrowLeft') {
+                showPrevImage()
             }
-            if (event.key === "ArrowRight") {
-                showNextImage();
+            if (event.key === 'ArrowRight') {
+                showNextImage()
             }
         },
-        [showPrevImage, showNextImage]
-    );
+        [showPrevImage, showNextImage],
+    )
 
     const handleResize = () => {
         if (imageCoverRef.current && imageRef.current) {
-            const imageSize = getContainedSize(imageRef.current);
+            const imageSize = getContainedSize(imageRef.current)
             setImageMargin({
                 imageSize,
                 coverRect: imageRef.current.getBoundingClientRect(),
-            });
+            })
         }
-    };
+    }
 
     useEffect(() => {
-        window.addEventListener("keydown", handleKeydown);
-        window.addEventListener("resize", handleResize);
+        window.addEventListener('keydown', handleKeydown)
+        window.addEventListener('resize', handleResize)
         return () => {
-            window.removeEventListener("keydown", handleKeydown);
-            window.removeEventListener("resize", handleResize);
-        };
-    }, [handleKeydown, handleResize]);
+            window.removeEventListener('keydown', handleKeydown)
+            window.removeEventListener('resize', handleResize)
+        }
+    }, [handleKeydown, handleResize])
 
     return (
         <div className="w-full h-[calc(100dvh-4rem)] flex items-start">
@@ -107,13 +107,13 @@ const CustomCarousel: React.FC<PropType> = (props) => {
                     width={0}
                     height={0}
                     onLoad={(image) => {
-                        setIsImageLoading(false);
+                        setIsImageLoading(false)
                         if (imageCoverRef.current) {
-                            const imageSize = getContainedSize(image.currentTarget);
+                            const imageSize = getContainedSize(image.currentTarget)
                             setImageMargin({
                                 imageSize,
                                 coverRect: image.currentTarget.getBoundingClientRect(),
-                            });
+                            })
                         }
                     }}
                     className="w-auto h-full max-h-[calc(100dvh-8rem)] object-contain"
@@ -146,7 +146,7 @@ const CustomCarousel: React.FC<PropType> = (props) => {
                 <div onClick={showNextImage} className="flex basis-1/2 cursor-pointer" />
             </div>
         </div>
-    );
-};
+    )
+}
 
-export default CustomCarousel;
+export default CustomCarousel

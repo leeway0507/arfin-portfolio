@@ -1,45 +1,45 @@
-"use client";
+'use client'
 
-import { motion, AnimatePresence } from "motion/react";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
-import About from "./about";
-import Contact from "./contact";
+import { motion, AnimatePresence } from 'motion/react'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import About from './about'
+import Contact from './contact'
 
 export function Nav() {
-    const [openAbout, setOpenAbout] = useState(false);
-    const [openContact, setOpenContact] = useState(false);
-    const pathName = usePathname();
+    const [openAbout, setOpenAbout] = useState(false)
+    const [openContact, setOpenContact] = useState(false)
+    const pathName = usePathname()
 
-    const openModal = openAbout || openContact;
+    const openModal = openAbout || openContact
 
     useEffect(() => {
         if (openModal) {
-            document.documentElement.style.overflow = "hidden";
+            document.documentElement.style.overflow = 'hidden'
         } else {
-            document.documentElement.style.overflow = "";
+            document.documentElement.style.overflow = ''
         }
 
         // cleanup
         return () => {
-            document.documentElement.style.overflow = "";
-        };
-    }, [openModal]);
+            document.documentElement.style.overflow = ''
+        }
+    }, [openModal])
 
     const closeModal = () => {
-        setOpenAbout(false);
-        setOpenContact(false);
-    };
+        setOpenAbout(false)
+        setOpenContact(false)
+    }
 
-    const height = "h-[2.1rem] sm:h-[4rem] ";
+    const height = 'h-[2.1rem] sm:h-[4rem] '
     return (
         <div className="z-50 fixed top-0 w-dvw inset-x-0">
-            {pathName !== "/" && (
+            {pathName !== '/' && (
                 <div
                     className={`z-50 absolute top-0 left-0 px-[1rem] sm:px-[2rem] flex items-center justify-start ${height}`}
                 >
-                    <Link href={"/"} className={`font-bold flex items-center`} onClick={closeModal}>
+                    <Link href={'/'} className={`font-bold flex items-center`} onClick={closeModal}>
                         Arfin Yoon
                     </Link>
                 </div>
@@ -57,17 +57,26 @@ export function Nav() {
                     <div
                         className={`z-50 absolute top-0 right-0 px-[1rem] sm:pe-[2rem] flex items-center justify-end ${height} text-black/50`}
                     >
-                        <button onClick={() => setOpenContact((v) => !v)} className={openContact ? "font-medium" : ""}>
+                        <button
+                            onClick={() => setOpenContact((v) => !v)}
+                            className={openContact ? 'font-medium' : ''}
+                        >
                             Contact
                         </button>
                     </div>
-                    <div className={`z-20 fixed sm:absolute max-sm:bottom-4 sm:top-0 w-full inset-x-0 `}>
+                    <div
+                        className={`z-20 fixed sm:absolute max-sm:bottom-4 sm:top-0 w-full inset-x-0 `}
+                    >
                         <div className={`rounded-2xl mx-4 bg-white/60 backdrop-blur-sm ${height}`}>
                             <div className="flex mx-auto items-center justify-center gap-4 h-full text-black/50 ">
                                 <button onClick={() => setOpenAbout((v) => !v)}>About</button>
                                 <Link
-                                    href={"/photographs"}
-                                    className={pathName.includes("/photographs") ? "text-black" : "text-black/50"}
+                                    href={'/photographs'}
+                                    className={
+                                        pathName.includes('/photographs')
+                                            ? 'text-black'
+                                            : 'text-black/50'
+                                    }
                                 >
                                     Photograhps
                                 </Link>
@@ -92,5 +101,5 @@ export function Nav() {
                 )}
             </AnimatePresence>
         </div>
-    );
+    )
 }

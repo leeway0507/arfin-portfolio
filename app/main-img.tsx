@@ -1,7 +1,7 @@
-"use client";
+'use client'
 
-import { motion } from "motion/react";
-import Image from "next/image";
+import { motion } from 'motion/react'
+import Image from 'next/image'
 
 export default function MainImage() {
     return (
@@ -13,8 +13,8 @@ export default function MainImage() {
             className="w-[95%] sm:min-w-[640px] sm:w-[55%] m-auto "
         >
             <div className="relative bg-gray-300/50 aspect-[1.53/1]">
-                <Image src="/main.jpg" alt="main" priority fill style={{ objectFit: "contain" }} />
+                <Image src="/main.jpg" alt="main" priority fill style={{ objectFit: 'contain' }} />
             </div>
         </motion.div>
-    );
+    )
 }

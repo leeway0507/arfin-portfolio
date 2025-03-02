@@ -1,33 +1,35 @@
-"use client";
+'use client'
 
-import { EmblaOptionsType } from "embla-carousel";
-import useEmblaCarousel from "embla-carousel-react";
-import { usePrevNextButtons } from "./embla-carousel-arrow-botton";
-import Image from "next/image";
-import "./embla.css";
-import { useEffect, useRef, useState } from "react";
-import { motion } from "motion/react";
-import { FaTh } from "react-icons/fa";
-import { FaSquare } from "react-icons/fa";
+import { EmblaOptionsType } from 'embla-carousel'
+import useEmblaCarousel from 'embla-carousel-react'
+import { usePrevNextButtons } from './embla-carousel-arrow-botton'
+import Image from 'next/image'
+import './embla.css'
+import { useEffect, useRef, useState } from 'react'
+import { motion } from 'motion/react'
+import { FaTh } from 'react-icons/fa'
+import { FaSquare } from 'react-icons/fa'
 
 type PropType = {
     slides: {
-        src: string;
-        alt: string;
-    }[];
-    options?: EmblaOptionsType;
-};
+        src: string
+        alt: string
+    }[]
+    options?: EmblaOptionsType
+}
 
 const EmblaCarouselPc: React.FC<PropType> = (props) => {
-    const { slides, options } = props;
-    const [emblaRef, emblaApi] = useEmblaCarousel(options, []);
-    const [openAll, setOpenAll] = useState(false);
+    const { slides, options } = props
+    const [emblaRef, emblaApi] = useEmblaCarousel(options, [])
+    const [openAll, setOpenAll] = useState(false)
 
-    const { onPrevButtonClick, onNextButtonClick } = usePrevNextButtons(emblaApi);
+    const { onPrevButtonClick, onNextButtonClick } = usePrevNextButtons(emblaApi)
 
     return (
         <>
-            <div className={` z-30 inset-0 absolute p-4 overflow-scroll bg-white ${openAll ? "block" : "hidden"}`}>
+            <div
+                className={` z-30 inset-0 absolute p-4 overflow-scroll bg-white ${openAll ? 'block' : 'hidden'}`}
+            >
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -38,7 +40,7 @@ const EmblaCarouselPc: React.FC<PropType> = (props) => {
                     {slides.map((img) => {
                         return (
                             <div key={img.src} className="relative h-[100px] sm:h-[240px] w-auto">
-                                {img.alt === "title" ? (
+                                {img.alt === 'title' ? (
                                     <div className="aspect-[3/4] h-full  sm:text-xl flex justify-center items-center">
                                         {img.src}
                                     </div>
@@ -53,7 +55,7 @@ const EmblaCarouselPc: React.FC<PropType> = (props) => {
                                     />
                                 )}
                             </div>
-                        );
+                        )
                     })}
                 </motion.div>
             </div>
@@ -77,40 +79,40 @@ const EmblaCarouselPc: React.FC<PropType> = (props) => {
                 </div>
             </div>
         </>
-    );
-};
+    )
+}
 
 function CardPc({ alt, src }: { alt: string; src: string }) {
-    const imageCoverRef = useRef<HTMLDivElement>(null);
-    const imageRef = useRef<HTMLImageElement>(null);
+    const imageCoverRef = useRef<HTMLDivElement>(null)
+    const imageRef = useRef<HTMLImageElement>(null)
     const [imageMargin, setImageMargin] = useState<{
         imageSize: {
-            width: number;
-            height: number;
-        };
-        coverRect: DOMRectReadOnly;
+            width: number
+            height: number
+        }
+        coverRect: DOMRectReadOnly
     }>({
         imageSize: { width: 0, height: 0 },
         coverRect: {} as DOMRectReadOnly,
-    });
+    })
 
-    const [isImageLoaded, setIsImageLoaded] = useState(true);
+    const [isImageLoaded, setIsImageLoaded] = useState(true)
 
     const handleResize = () => {
         if (imageCoverRef.current && imageRef.current) {
-            const imageSize = getContainedSize(imageRef.current);
+            const imageSize = getContainedSize(imageRef.current)
             setImageMargin({
                 imageSize,
                 coverRect: imageRef.current.getBoundingClientRect(),
-            });
+            })
         }
-    };
+    }
     useEffect(() => {
-        window.addEventListener("resize", handleResize);
+        window.addEventListener('resize', handleResize)
         return () => {
-            window.removeEventListener("resize", handleResize);
-        };
-    }, []);
+            window.removeEventListener('resize', handleResize)
+        }
+    }, [])
 
     return (
         <div
@@ -118,7 +120,7 @@ function CardPc({ alt, src }: { alt: string; src: string }) {
             key={src}
             ref={imageCoverRef}
         >
-            {alt === "title" ? (
+            {alt === 'title' ? (
                 <div className="embla__slide flex items-center justify-center text-5xl" key={src}>
                     {src}
                 </div>
@@ -131,11 +133,10 @@ function CardPc({ alt, src }: { alt: string; src: string }) {
                     width={0}
                     height={0}
                     onLoad={(image) => {
-                        setIsImageLoaded(false);
-                        image.currentTarget.classList.remove("opacity-0");
-                        handleResize();
+                        setIsImageLoaded(false)
+                        image.currentTarget.classList.remove('opacity-0')
+                        handleResize()
                     }}
-                    priority
                 />
             )}
             <div
@@ -143,26 +144,26 @@ function CardPc({ alt, src }: { alt: string; src: string }) {
                     width: `${imageMargin.imageSize.width}px`,
                     height: `${imageMargin.imageSize.height}px`,
                 }}
-                className={`absolute text-sm ${isImageLoaded ? "hidden" : "block"}`}
+                className={`absolute text-sm ${isImageLoaded ? 'hidden' : 'block'}`}
             >
                 <div className="absolute -bottom-5">{alt}</div>
             </div>
         </div>
-    );
+    )
 }
 
 function getContainedSize(img: EventTarget & HTMLImageElement) {
-    const ratio = img.naturalWidth / img.naturalHeight;
-    let width = img.height * ratio;
-    let height = img.height;
+    const ratio = img.naturalWidth / img.naturalHeight
+    let width = img.height * ratio
+    let height = img.height
     if (width > img.width) {
-        width = img.width;
-        height = img.width / ratio;
+        width = img.width
+        height = img.width / ratio
     }
     return {
         width,
         height,
-    };
+    }
 }
 
-export { EmblaCarouselPc };
+export { EmblaCarouselPc }

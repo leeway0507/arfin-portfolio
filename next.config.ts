@@ -5,7 +5,7 @@ const nextConfig = {
      *
      * @see https://nextjs.org/docs/app/building-your-application/deploying/static-exports
      */
-    output: "export",
+    output: 'export',
 
     /**
      * Disable server-based image optimization. Next.js does not support
@@ -16,6 +16,6 @@ const nextConfig = {
     images: {
         unoptimized: true,
     },
-};
+}
 
-export default nextConfig;
+export default nextConfig
