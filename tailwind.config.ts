@@ -21,6 +21,7 @@ export default {
         pc: "480px"
       }
     },
+
   },
   plugins: [require('tailwindcss-animated')],
 } satisfies Config;

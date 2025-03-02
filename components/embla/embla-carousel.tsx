@@ -57,13 +57,13 @@ const EmblaCarouselPc: React.FC<PropType> = (props) => {
                     })}
                 </motion.div>
             </div>
-            <div className="embla relative ">
+            <div className="embla relative">
                 <div className="z-10 absolute flex w-full h-full ">
-                    <button onClick={onPrevButtonClick} className="basis-1/2" />
-                    <button onClick={onNextButtonClick} className="basis-1/2" />
+                    <button onClick={onPrevButtonClick} className="basis-1/2 focus:outline-none" />
+                    <button onClick={onNextButtonClick} className="basis-1/2 focus:outline-none" />
                 </div>
                 <button
-                    className="sm:block hidden absolute right-0 top-[2rem] sm:top-[4rem] z-30 p-4"
+                    className="absolute right-0 top-[2rem] sm:top-[4rem] z-30 p-4"
                     onClick={() => setOpenAll((b) => !b)}
                 >
                     {openAll ? <FaSquare /> : <FaTh />}
