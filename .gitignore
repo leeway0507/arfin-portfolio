@@ -130,4 +130,5 @@ dist
 .pnp.*
 
 .DS_store
-public/raw
+image-optimization/images
+.vscode/settings.json
