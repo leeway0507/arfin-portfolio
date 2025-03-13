@@ -1,15 +1,33 @@
 import Image from 'next/image'
 import { type Slide } from './type'
+import { twMerge } from 'tailwind-merge'
 
-function Gallery({ slides, openAll }: { slides: Slide[]; openAll: boolean }) {
+type GalleryProps = {
+    slides: Slide[]
+    openAll: boolean
+    currentTargetIdx: number
+    setCurrentTargetIdx: (s: number) => void
+}
+
+function Gallery({ slides, openAll, currentTargetIdx, setCurrentTargetIdx }: GalleryProps) {
     return (
         <div
-            className={`z-30 inset-0 absolute p-4 overflow-scroll bg-white ${openAll ? 'block' : 'hidden'}`}
+            className={twMerge(
+                'z-30 inset-0 absolute p-4 overflow-scroll bg-white',
+                openAll ? 'block' : 'hidden',
+            )}
         >
             <div className="pt-[4rem] flex gap-2 sm:gap-4 flex-wrap ">
-                {slides.map((img) => {
+                {slides.map((img, idx) => {
                     return (
-                        <div key={img.src} className="relative h-[100px] sm:h-[240px] w-auto">
+                        <button
+                            key={img.src}
+                            className={twMerge(
+                                'relative h-[100px] sm:h-[240px] w-auto',
+                                currentTargetIdx === idx ? 'border border-black' : 'border-0',
+                            )}
+                            onClick={() => setCurrentTargetIdx(idx)}
+                        >
                             {img.alt === 'title' ? (
                                 <div className="aspect-[3/4] h-full  sm:text-xl flex justify-center items-center">
                                     {img.src}
@@ -24,7 +42,7 @@ function Gallery({ slides, openAll }: { slides: Slide[]; openAll: boolean }) {
                                     className="h-full w-auto object-contain"
                                 />
                             )}
-                        </div>
+                        </button>
                     )
                 })}
             </div>
