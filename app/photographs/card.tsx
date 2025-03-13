@@ -1,41 +1,19 @@
-'use client'
-
-import Link from 'next/link'
-import Image from 'next/image'
 import { useRef, useState, useEffect } from 'react'
-import { motion } from 'motion/react'
+import Image from 'next/image'
 
-export function PcCard({ src, name }: { src: string; name: string }) {
-    const [imageMargin, setImageMargin] = useState<{
-        imageSize: {
-            width: number
-            height: number
-        }
-        coverRect: DOMRectReadOnly
-    }>({
+type ImageMargin = {
+    imageSize: { width: number; height: number }
+    coverRect: DOMRectReadOnly
+}
+
+function useImageResize(imageRef: React.RefObject<HTMLImageElement | null>) {
+    const [imageMargin, setImageMargin] = useState<ImageMargin>({
         imageSize: { width: 0, height: 0 },
         coverRect: {} as DOMRectReadOnly,
     })
-    const [isImageLoading, setIsImageLoading] = useState(true)
-    const imageCoverRef = useRef<HTMLDivElement>(null)
-    const imageRef = useRef<HTMLImageElement>(null)
 
-    function getContainedSize(img: EventTarget & HTMLImageElement) {
-        const ratio = img.naturalWidth / img.naturalHeight
-        let width = img.height * ratio
-        let height = img.height
-        if (width > img.width) {
-            width = img.width
-            height = img.width / ratio
-        }
-        return {
-            width,
-            height,
-        }
-    }
-
-    const handleResize = () => {
-        if (imageCoverRef.current && imageRef.current) {
+    const updateSize = () => {
+        if (imageRef.current) {
             const imageSize = getContainedSize(imageRef.current)
             setImageMargin({
                 imageSize,
@@ -45,57 +23,90 @@ export function PcCard({ src, name }: { src: string; name: string }) {
     }
 
     useEffect(() => {
-        window.addEventListener('resize', handleResize)
-        return () => {
-            window.removeEventListener('resize', handleResize)
-        }
+        window.addEventListener('resize', updateSize)
+        return () => window.removeEventListener('resize', updateSize)
     }, [])
 
+    return { imageMargin, updateSize }
+}
+
+const getContainedSize = (img: EventTarget & HTMLImageElement) => {
+    const ratio = img.naturalWidth / img.naturalHeight
+    let width = img.height * ratio
+    let height = img.height
+    if (width > img.width) {
+        width = img.width
+        height = img.width / ratio
+    }
+    return {
+        width,
+        height,
+    }
+}
+
+function Card({ alt, src }: { alt: string; src: string }) {
+    const imageCoverRef = useRef<HTMLDivElement>(null)
+    const imageRef = useRef<HTMLImageElement | null>(null)
+    const { imageMargin, updateSize } = useImageResize(imageRef)
+    const [isImageLoaded, setIsImageLoaded] = useState(true)
+
     return (
-        <Link href={`/photographs/${name}`} className={`basis-1/3 w-full`}>
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                className="w-full h-full"
-                ref={imageCoverRef}
-            >
-                <div className="w-full h-full flex flex-col items-center justify-center aspect-[51/64]">
-                    <Image
-                        src={src}
-                        alt={name}
-                        ref={imageRef}
-                        width={0}
-                        height={0}
-                        onLoad={(image) => {
-                            if (imageCoverRef.current) {
-                                const imageSize = getContainedSize(image.currentTarget)
-                                setIsImageLoading(false)
-                                setImageMargin({
-                                    imageSize,
-                                    coverRect: image.currentTarget.getBoundingClientRect(),
-                                })
-                            }
-                        }}
-                        className="w-auto h-full object-contain"
-                    />
+        <div
+            className="embla__slide relative h-dvh overflow-hidden flex flex-col items-center justify-center"
+            key={src}
+            ref={imageCoverRef}
+        >
+            {alt === 'title' ? (
+                <div className="embla__slide flex items-center justify-center text-5xl" key={src}>
+                    {src}
                 </div>
-                <div
-                    style={{
-                        left: `${imageMargin.coverRect.left}px`,
-                        top: `${
-                            imageMargin.coverRect.top +
-                            (imageMargin.coverRect.height - imageMargin.imageSize.height) / 2 +
-                            imageMargin.imageSize.height
-                        }px`,
-                        opacity: isImageLoading ? 0 : 100,
+            ) : (
+                <Image
+                    className="w-auto h-full max-h-[calc(100dvh-10rem)] object-contain border-48"
+                    ref={imageRef}
+                    src={src}
+                    alt={alt}
+                    width={0}
+                    height={0}
+                    onLoad={(image) => {
+                        setIsImageLoaded(false)
+                        image.currentTarget.classList.remove('opacity-0')
+                        updateSize()
                     }}
-                    className="absolute font-medium"
-                >
-                    {name}
-                </div>
-            </motion.div>
-        </Link>
+                />
+            )}
+            <Caption
+                alt={alt}
+                isImageLoaded={isImageLoaded}
+                imageMarginWidth={imageMargin.imageSize.width}
+                imageMarginHeight={imageMargin.imageSize.height}
+            />
+        </div>
     )
 }
+
+function Caption({
+    alt,
+    isImageLoaded,
+    imageMarginWidth,
+    imageMarginHeight,
+}: {
+    alt: string
+    isImageLoaded: boolean
+    imageMarginWidth: number
+    imageMarginHeight: number
+}) {
+    return (
+        <div
+            style={{
+                width: `${imageMarginWidth}px`,
+                height: `${imageMarginHeight}px`,
+            }}
+            className={`absolute text-sm ${isImageLoaded ? 'hidden' : 'block'}`}
+        >
+            <div className="absolute -bottom-5">{alt}</div>
+        </div>
+    )
+}
+
+export { Card }

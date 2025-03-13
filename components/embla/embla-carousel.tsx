@@ -18,7 +18,7 @@ type PropType = {
     options?: EmblaOptionsType
 }
 
-const EmblaCarouselPc: React.FC<PropType> = (props) => {
+const EmblaCarousel: React.FC<PropType> = (props) => {
     const { slides, options } = props
     const [emblaRef, emblaApi] = useEmblaCarousel(options, [])
     const [openAll, setOpenAll] = useState(false)
@@ -166,4 +166,4 @@ function getContainedSize(img: EventTarget & HTMLImageElement) {
     }
 }
 
-export { EmblaCarouselPc }
+export { EmblaCarousel as EmblaCarouselPc }
