@@ -4,7 +4,7 @@ import { EmblaCarouselType, EmblaOptionsType } from 'embla-carousel'
 import useEmblaCarousel, { EmblaViewportRefType } from 'embla-carousel-react'
 import { usePrevNextButtons } from './embla-carousel-arrow-botton'
 import './embla.css'
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { FaTh } from 'react-icons/fa'
 import { FaSquare } from 'react-icons/fa'
 import { Card } from './card'
@@ -21,6 +21,46 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
     const [openGallery, setOpenGallery] = useState(false)
     const [currentTargetIdx, setCurrentTargetIdx] = useState(0)
     const [emblaRef, emblaApi] = useEmblaCarousel(options, [])
+
+    // 이미지 프리로딩 함수
+    const preloadImages = useCallback(
+        (startIdx: number, count: number = 3) => {
+            for (let i = 1; i <= count; i++) {
+                const targetIdx = startIdx + i
+                if (targetIdx < slides.length && slides[targetIdx].alt !== 'title') {
+                    const img = new Image()
+                    img.src = slides[targetIdx].src
+                }
+            }
+        },
+        [slides],
+    )
+
+    // 현재 인덱스가 변경될 때마다 다음 이미지들을 프리로드
+    useEffect(() => {
+        preloadImages(currentTargetIdx, 3)
+    }, [currentTargetIdx, preloadImages])
+
+    // Embla API가 준비되면 초기 인덱스 설정 및 select 이벤트 리스너 등록
+    useEffect(() => {
+        if (!emblaApi) return
+
+        const onSelect = () => {
+            const selectedIdx = emblaApi.selectedScrollSnap()
+            setCurrentTargetIdx(selectedIdx)
+        }
+
+        // 초기 인덱스 설정
+        onSelect()
+
+        // select 이벤트 리스너 등록
+        emblaApi.on('select', onSelect)
+
+        return () => {
+            emblaApi.off('select', onSelect)
+        }
+    }, [emblaApi])
+
     const scrollToSlide = (idx: number) => {
         if (emblaApi) {
             emblaApi.scrollTo(idx)
