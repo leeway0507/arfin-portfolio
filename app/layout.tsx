@@ -25,7 +25,7 @@ export default function RootLayout({
     children: React.ReactNode
 }>) {
     return (
-        <html lang="en" className="px-[0.5rem] sm:px-[2rem] relative ">
+        <html lang="en" className="px-[0.5rem] sm:px-[2rem] relative " suppressHydrationWarning>
             <body className={`${marionNormal.className} antialiased flex sm:pb-0`}>
                 <Nav />
                 <div className="min-h-dvh w-full">{children}</div>
