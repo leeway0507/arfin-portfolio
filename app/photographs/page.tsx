@@ -5,11 +5,11 @@ import { IMG_DIR_ARR } from './images_dir'
 export default async function Project() {
     const slides = IMG_DIR_ARR.map((f) => {
         if (f.includes('.webp')) {
-            const [, ...name] = f.replace('.webp', '').split('_')
+            const alt = f.replace('.webp', '').replace(/\([^)]*\)/, '')
             const cdnSrc = new URL(f, process.env.NEXT_PUBLIC_IMAGE_URL).href
             return {
                 src: cdnSrc,
-                alt: name.join(', '),
+                alt,
             }
         } else {
             return {
