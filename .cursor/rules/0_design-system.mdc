@@ -1,0 +1,99 @@
+---
+globs: *.tsx
+alwaysApply: false
+---
+
+# Design System Guide
+
+이 프로젝트의 UI는 **Tailwind CSS**와 **shadcn/ui** 기반입니다. 새 컴포넌트나 스타일 수정 시 아래 가이드를 따르세요.
+
+---
+
+## 1. 폴더 구조
+
+```
+arfin-portfolio/
+├── app/                    # Next.js App Router
+│   ├── fonts/              # 로컬 폰트 (marion-*.ttf)
+│   ├── globals.css         # 전역 스타일, CSS 변수
+│   ├── layout.tsx          # 루트 레이아웃
+│   └── photographs/        # 라우트별 페이지 컴포넌트
+├── components/
+│   ├── ui/                 # shadcn/ui 기반 공통 컴포넌트
+│   │   ├── button.tsx
+│   │   ├── card.tsx
+│   │   └── dialog.tsx
+│   ├── nav/                # 네비게이션 관련 (About, Contact, Nav)
+│   ├── custom-carousel/    # 기능별 재사용 컴포넌트
+│   └── embla/              # Embla Carousel 래퍼
+├── lib/
+│   └── utils.ts            # cn() 등 유틸리티
+├── tailwind.config.ts
+└── components.json         # shadcn 설정
+```
+
+### 컴포넌트 배치 규칙
+
+| 위치 | 용도 | 예시 |
+|------|------|------|
+| `components/ui/` | shadcn 기본 컴포넌트, 재사용 가능한 프리미티브 | Button, Card, Dialog |
+| `components/nav/`, `components/custom-carousel/` | 기능별/도메인별 컴포넌트 | Nav, CustomCarousel |
+| `app/photographs/` | 라우트 전용 컴포넌트 (해당 페이지만 사용) | card.tsx, gallery.tsx |
+
+---
+
+## 2. 색상 시스템
+
+`globals.css`의 CSS 변수 + Tailwind semantic colors 사용.
+
+| 토큰 | 용도 |
+|------|------|
+| `background`, `foreground` | 페이지 배경·텍스트 |
+| `card`, `card-foreground` | 카드 배경·텍스트 |
+| `primary`, `primary-foreground` | 주요 버튼 등 |
+| `secondary`, `secondary-foreground` | 보조 UI |
+| `muted`, `muted-foreground` | 설명·비활성 텍스트 |
+| `accent`, `accent-foreground` | 호버·강조 |
+| `border`, `input`, `ring` | 테두리·입력·포커스 링 |
+| `destructive` | 삭제·경고 |
+| `chart-1` ~ `chart-5` | 차트 색상 |
+
+예: `bg-background text-foreground`, `bg-primary text-primary-foreground`, `text-muted-foreground`
+
+---
+
+## 3. 타이포·레이아웃
+
+- **폰트**: Marion (`app/fonts/`) — `layout.tsx`에서 로드
+- **브레이크포인트**: `pc: 480px` (tailwind.config.ts)
+- **둥글기**: `rounded-lg`, `rounded-md`, `rounded-sm` (--radius 기반)
+- **애니메이션**: `tailwindcss-animate`, `motion/react`
+- **드래그 앤 드롭**: `@dnd-kit/core`, `@dnd-kit/sortable` 등 **dnd-kit** 사용
+
+---
+
+## 4. 전역 스타일 (globals.css)
+
+- `*`: `border-border` 기본 적용
+- `body`: `bg-background text-foreground`
+
+---
+
+## 5. shadcn/ui 규칙
+
+- **컴포넌트 추가**: 필요 시 `pnpm dlx shadcn@latest add <컴포넌트명>` 으로 설치 (예: `pnpm dlx shadcn@latest add dropdown-menu`)
+- **클래스 병합**: `cn()` 사용 (lib/utils.ts) — `clsx` + `tailwind-merge`
+- **컴포넌트 위치**: shadcn 컴포넌트는 `components/ui/`에 두기
+- **커스터마이징**: Tailwind로 덮어쓰기, CSS 변수 우선 활용
+- **접근성**: Radix 기반 기본 동작 유지, 포커스·ARIA 변경 시 a11y 손상 주의
+
+---
+
+## 6. 컴포넌트 작성 체크리스트
+
+- [ ] 새 컴포넌트는 `components/ui/` vs 기능 폴더 중 적절한 곳에 배치했는가?
+- [ ] 색상·타이포는 CSS 변수/semantic 토큰을 우선 사용했는가?
+- [ ] 반응형은 `sm:`, `pc:` 등 모바일 우선으로 작성했는가?
+- [ ] shadcn 사용 시 `cn()`으로 클래스를 병합했는가?
+- [ ] Motion 애니메이션 사용 시 `motion/react`를 일관되게 사용했는가?
+- [ ] 드래그 앤 드롭 구현 시 `dnd-kit`을 사용했는가?
