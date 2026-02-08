@@ -132,3 +132,7 @@ dist
 .DS_store
 image-optimization/images
 .vscode/settings.json
+
+.swc
+.wrangler
+wrangler.jsonc

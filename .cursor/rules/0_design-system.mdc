@@ -34,11 +34,11 @@ arfin-portfolio/
 
 ### 컴포넌트 배치 규칙
 
-| 위치 | 용도 | 예시 |
-|------|------|------|
-| `components/ui/` | shadcn 기본 컴포넌트, 재사용 가능한 프리미티브 | Button, Card, Dialog |
-| `components/nav/`, `components/custom-carousel/` | 기능별/도메인별 컴포넌트 | Nav, CustomCarousel |
-| `app/photographs/` | 라우트 전용 컴포넌트 (해당 페이지만 사용) | card.tsx, gallery.tsx |
+| 위치                                             | 용도                                           | 예시                  |
+| ------------------------------------------------ | ---------------------------------------------- | --------------------- |
+| `components/ui/`                                 | shadcn 기본 컴포넌트, 재사용 가능한 프리미티브 | Button, Card, Dialog  |
+| `components/nav/`, `components/custom-carousel/` | 기능별/도메인별 컴포넌트                       | Nav, CustomCarousel   |
+| `app/photographs/`                               | 라우트 전용 컴포넌트 (해당 페이지만 사용)      | card.tsx, gallery.tsx |
 
 ---
 
@@ -46,17 +46,17 @@ arfin-portfolio/
 
 `globals.css`의 CSS 변수 + Tailwind semantic colors 사용.
 
-| 토큰 | 용도 |
-|------|------|
-| `background`, `foreground` | 페이지 배경·텍스트 |
-| `card`, `card-foreground` | 카드 배경·텍스트 |
-| `primary`, `primary-foreground` | 주요 버튼 등 |
-| `secondary`, `secondary-foreground` | 보조 UI |
-| `muted`, `muted-foreground` | 설명·비활성 텍스트 |
-| `accent`, `accent-foreground` | 호버·강조 |
-| `border`, `input`, `ring` | 테두리·입력·포커스 링 |
-| `destructive` | 삭제·경고 |
-| `chart-1` ~ `chart-5` | 차트 색상 |
+| 토큰                                | 용도                  |
+| ----------------------------------- | --------------------- |
+| `background`, `foreground`          | 페이지 배경·텍스트    |
+| `card`, `card-foreground`           | 카드 배경·텍스트      |
+| `primary`, `primary-foreground`     | 주요 버튼 등          |
+| `secondary`, `secondary-foreground` | 보조 UI               |
+| `muted`, `muted-foreground`         | 설명·비활성 텍스트    |
+| `accent`, `accent-foreground`       | 호버·강조             |
+| `border`, `input`, `ring`           | 테두리·입력·포커스 링 |
+| `destructive`                       | 삭제·경고             |
+| `chart-1` ~ `chart-5`               | 차트 색상             |
 
 예: `bg-background text-foreground`, `bg-primary text-primary-foreground`, `text-muted-foreground`
 
@@ -64,7 +64,7 @@ arfin-portfolio/
 
 ## 3. 타이포·레이아웃
 
-- **폰트**: Marion (`app/fonts/`) — `layout.tsx`에서 로드
+- **폰트**: 영문 Marion Normal (로컬), 한글 Pretendard (CDN) — `font-sans`에 Marion 우선, 한글은 Pretendard로 폴백
 - **브레이크포인트**: `pc: 480px` (tailwind.config.ts)
 - **둥글기**: `rounded-lg`, `rounded-md`, `rounded-sm` (--radius 기반)
 - **애니메이션**: `tailwindcss-animate`, `motion/react`

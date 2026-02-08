@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        "lib": [
+            "esnext"
+        ],
+        "types": [
+            "./types.d.ts",
+            "@cloudflare/workers-types"
+        ],
+        "strict": true,
+        "noEmit": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "./**/*.ts"
+    ]
+}

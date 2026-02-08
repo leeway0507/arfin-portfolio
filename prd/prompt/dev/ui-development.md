@@ -22,11 +22,10 @@ PRD Acceptance Criteria 기반으로 레퍼런스 UI를 디자인 시스템으�
 
 ### 참고 문서
 
-| 문서                                   | 용도                 |
-| -------------------------------------- | -------------------- |
-| `pm/prompts/context/design-system.md`  | 디자인 시스템 가이드 |
-| `pm/prompts/utils/devils-advocate.md`  | PRD 검증 프로세스    |
-| `pm/prompts/utils/create-mock-data.md` | Mock data 생성       |
+| 문서                                  | 용도                 |
+| ------------------------------------- | -------------------- |
+| `pm/prompts/context/design-system.md` | 디자인 시스템 가이드 |
+| `pm/prompts/utils/devils-advocate.md` | PRD 검증 프로세스    |
 
 ## Output
 
@@ -34,11 +33,11 @@ PRD Acceptance Criteria 기반으로 레퍼런스 UI를 디자인 시스템으�
 
 - ✅ 모든 AC 구현
 - ✅ 디자인 시스템 일관 적용
-- ✅ `apps/web/apis/{domain}/types.ts` 타입 사용
-- ✅ Tanstack Query hooks 사용
-- ✅ Mock data 기반 동작
+- ✅ `apps/web/apis/{domain}/types.ts` 타입 사용 (해당 도메인 API가 있을 때만)
 - ✅ Lint 오류 없음
 - ✅ UX 개선
+
+**현재 레포 기준**: API는 auth callback 하나뿐이므로 Mock data·Tanstack Query는 사용하지 않는다. 도메인 API가 추가되면 그때 해당 항목 적용.
 
 ## Step
 
@@ -60,23 +59,19 @@ PRD Acceptance Criteria 기반으로 레퍼런스 UI를 디자인 시스템으�
 
 **완료:** PRD 분석 ✓ + Todo 생성 ✓ → 사용자 보고
 
-### 2단계: API Types + Mock Data + API 함수 + Tanstack Query 생성
+### 2단계: API Types + API 함수 (필요 시만)
+
+**현재 레포**: API가 auth callback 하나뿐이므로 **Mock Data·Tanstack Query는 생략**한다. feature에 새 도메인 API가 필요할 때만 아래 중 types + API 함수만 수행.
 
 **작업 위치**: `apps/web/apis/{domain}/` — API 관련 모든 작업은 여기서 수행한다.
 
-**폴더 구조 예시** (`community-managements` 기준):
+**폴더 구조 예시** (도메인 API가 있을 때):
 
 ```
 apps/web/apis/
   {domain}/
     types.ts              # Req, Res 타입 정의
     index.ts              # API 함수 정의
-    mock/
-      mock-generator.mjs  # mock JSON 생성기
-      *-mock.json         # 생성된 mock (예: portfolio-summary-mock.json)
-
-apps/web/hooks/tanstack/
-  use-{feature}-query.ts  # Tanstack Query hooks
 ```
 
 #### 2-1. `types.ts` 생성/수정
@@ -86,7 +81,6 @@ apps/web/hooks/tanstack/
 **작업 내용:**
 
 1. API 요청/응답 타입 정의 (Req, Res)
-2. Mock API 실행을 위한 타입 설계
 
 **타입 설계 핵심 원칙:**
 
@@ -101,12 +95,7 @@ apps/web/hooks/tanstack/
 | **명확성**           | 주석으로 용도/의도 명시                           | API 응답 vs 도메인 타입 분리                                 |
 | **Req/Res 분리**     | 요청 타입은 `*Request`, 응답 타입은 `*Response`   | `CreateEventRequest`, `EventResponse`                        |
 
-#### 2-2. Mock Data 생성
-
-1. `create-mock-data.md` 참고하여 `apps/web/apis/{domain}/mock/mock-generator.mjs` 생성
-2. Generator 실행 → `apps/web/apis/{domain}/mock/*-mock.json` 저장 (예: `portfolio-summary-mock.json`)
-
-#### 2-3. API 함수 생성/수정
+#### 2-2. API 함수 생성/수정
 
 **위치**: `apps/web/apis/{domain}/index.ts`
 
@@ -124,26 +113,7 @@ apps/web/hooks/tanstack/
 - `createRequestConfig(accessToken)` 사용
 - JSDoc 주석 포함
 
-#### 2-4. Tanstack Query Hooks 생성
-
-**위치**: `apps/web/hooks/tanstack/use-{feature}-query.ts`
-
-**작업 내용:**
-
-1. `useQuery` 또는 `useMutation` hooks 생성
-2. `useSession`으로 인증 토큰 가져오기
-3. `queryKey` 정의 (캐시 키)
-4. `queryClient.invalidateQueries`로 캐시 무효화 (mutation 성공 시)
-5. `enabled` 옵션으로 조건부 실행
-6. `staleTime` 설정 (필요 시)
-
-**참고 패턴:**
-
-- `apps/web/hooks/tanstack/use-portfolio-edit-sections-query.ts` 참고
-- JSDoc 주석 포함
-- `UseQueryResult`, `UseMutationResult` 타입 사용
-
-**완료:** Types 생성 ✓ + 원칙 검증 ✓ + Mock 생성 ✓ + API 함수 생성 ✓ + Tanstack Query 생성 ✓ → 사용자 보고
+**완료:** (도메인 API 필요 시) Types 생성 ✓ + API 함수 생성 ✓ → 사용자 보고. API 불필요 시 2단계는 스킵하고 3단계로 진행.
 
 ### 3단계: 단일 작업 구현 (계획 → 구현 연속)
 
@@ -154,18 +124,15 @@ apps/web/hooks/tanstack/
 1. `pending` 첫 작업 선택 → `in_progress` 변경
 2. Feature 파일 분석: 디자인 시스템 대체 가능 영역 + UX 개선점
 3. 디자인 시스템 문서 참고하여 컴포넌트 선정
-4. Mock data 활용 계획 구체화 (경로, 필드 명시)
 
 #### 3-2. 구현
 
 1. Feature 파일 수정
-2. `apps/web/apis/{domain}/types.ts` 타입 import
-3. Tanstack Query hooks import (`apps/web/hooks/tanstack/use-{feature}-query.ts`)
-4. Mock data JSON import (필요 시)
-5. 디자인 시스템 일관 적용
-6. `read_lints` → 오류 수정
-7. Todo → `completed`
-8. **다음 AC 보고** (목적, 구현 기능)
+2. `apps/web/apis/{domain}/types.ts` 타입 import (해당 도메인 API가 있을 때만)
+3. 디자인 시스템 일관 적용
+4. `read_lints` → 오류 수정
+5. Todo → `completed`
+6. **다음 AC 보고** (목적, 구현 기능)
 
 **완료:** 계획 ✓ + 구현 ✓ + Lint ✓ → 사용자 보고 + 다음 AC 안내
 
@@ -218,9 +185,9 @@ apps/web/hooks/tanstack/
 
 ## 핵심 실행 규칙 요약
 
-| 규칙                 | 내용                                                         |
-| -------------------- | ------------------------------------------------------------ |
-| **Types 우선**       | 2단계에서 Types → Mock data → API 함수 → Tanstack Query 순서 |
+| 규칙                 | 내용                                                                 |
+| -------------------- | -------------------------------------------------------------------- |
+| **Types 우선**       | 2단계는 도메인 API 필요 시에만. Types → API 함수 순서 (Mock/Query 생략) |
 | **단계별 보고**      | 각 단계 완료 → 사용자 보고 → 확인 대기 → 다음 진행           |
 | **반복 보고**        | 4단계 내 3단계 반복 시에도 매 반복마다 보고 + 확인           |
 | **PRD 동기화**       | 사용자 변경 요청 즉시 PRD 반영                               |
