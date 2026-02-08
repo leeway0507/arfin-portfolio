@@ -1,7 +1,13 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut, onAuthStateChanged, type User } from 'firebase/auth'
+import {
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut as firebaseSignOut,
+    onAuthStateChanged,
+    type User,
+} from 'firebase/auth'
 import { getFirebaseAuth } from '@/lib/auth/firebase'
 
 /**

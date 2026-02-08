@@ -10,7 +10,7 @@ export default function MainImage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
-            className="w-[95%] sm:min-w-[640px] sm:w-[55%] m-auto "
+            className="w-[95%] max-w-[640px] sm:w-[55%] m-auto"
         >
             <div className="relative bg-gray-300/50 aspect-[1.53/1]">
                 <Image src="/main.jpg" alt="main" priority fill style={{ objectFit: 'contain' }} />

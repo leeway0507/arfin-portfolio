@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils'
 import { Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { uploadPhotos as uploadPhotosApi, predictFilenames } from '@/lib/apis/photos/api'
+import type { PhotoUpdateAction } from '../hooks/use-photo-management'
 
 const COMPRESSION_OPTIONS = {
     maxSizeMB: 1,
@@ -25,26 +26,42 @@ const COMPRESSION_OPTIONS = {
 const ACCEPT_TYPES = 'image/jpeg,image/png,image/webp,image/gif'
 const ACCEPT_EXT = '.jpg,.jpeg,.png,.webp,.gif'
 
+function filterImageFiles(files: FileList | null): File[] {
+    if (!files || files.length === 0) return []
+    return Array.from(files).filter((f) => f.type.startsWith('image/'))
+}
+
+function getWebpFileName(originalName: string): string {
+    const stem = originalName.replace(/\.[^.]+$/, '') || 'image'
+    return `${stem}.webp`
+}
+
+async function compressOneFile(
+    file: File,
+    options: {
+        maxSizeMB: number
+        maxWidthOrHeight: number
+        useWebWorker: boolean
+        fileType: 'image/webp'
+    },
+): Promise<File> {
+    const compressed = await imageCompression(file, options)
+    const correctName = getWebpFileName(file.name)
+    return new File([compressed], correctName, { type: 'image/webp' })
+}
+
 interface PhotoUploadDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
-    /** 낙관적 업데이트: 예측 파일명 + 선택적 미리보기 URL(같은 순서). 업로드 시작 전 즉시 호출 */
-    onOptimisticAdd: (predictedFilenames: string[], previewUrls?: string[]) => void
-    /** 업로드 성공 시 호출. order 있으면 서버 order로 목록 갱신 */
-    onSuccess: (uploadedFilenames?: string[], order?: string[]) => void
-    /** 업로드 실패 시 롤백 호출 */
-    onRollback: () => void
+    onPhotosUpdate: (action: PhotoUpdateAction) => void
     existingFilenames: string[]
-    /** Firebase ID token for API 인증 (upload 시 사용) */
     getToken: () => Promise<string | null>
 }
 
 export function PhotoUploadDialog({
     open,
     onOpenChange,
-    onOptimisticAdd,
-    onSuccess,
-    onRollback,
+    onPhotosUpdate,
     existingFilenames,
     getToken,
 }: PhotoUploadDialogProps) {
@@ -55,9 +72,7 @@ export function PhotoUploadDialog({
 
     const processFiles = useCallback(
         async (files: FileList | null) => {
-            if (!files || files.length === 0) return
-
-            const imageFiles = Array.from(files).filter((f) => f.type.startsWith('image/'))
+            const imageFiles = filterImageFiles(files)
             if (imageFiles.length === 0) {
                 setError('이미지 파일(jpg, png, webp, gif)만 업로드할 수 있습니다.')
                 return
@@ -69,14 +84,7 @@ export function PhotoUploadDialog({
             const compressedFiles: File[] = []
             for (let i = 0; i < imageFiles.length; i++) {
                 try {
-                    const originalName = imageFiles[i].name
-                    const compressed = await imageCompression(imageFiles[i], COMPRESSION_OPTIONS)
-                    const stem = originalName.replace(/\.[^.]+$/, '') || 'image'
-                    const correctName = `${stem}.webp`
-                    const fileWithCorrectName = new File([compressed], correctName, {
-                        type: 'image/webp',
-                    })
-                    compressedFiles.push(fileWithCorrectName)
+                    compressedFiles.push(await compressOneFile(imageFiles[i], COMPRESSION_OPTIONS))
                 } catch {
                     setError(`이미지 압축 실패: ${imageFiles[i].name}`)
                     setIsConverting(false)
@@ -88,33 +96,37 @@ export function PhotoUploadDialog({
             setIsConverting(false)
             const predictedFilenames = predictFilenames(compressedFiles, existingFilenames)
             const previewUrls = compressedFiles.map((f) => URL.createObjectURL(f))
-            onOptimisticAdd(predictedFilenames, previewUrls)
+            onPhotosUpdate({
+                type: 'optimistic',
+                predictedFilenames,
+                previewUrls,
+            })
             onOpenChange(false)
 
-            // 업로드는 백그라운드. 완료 시 토스트 + onSuccess/onRollback
+            // 업로드는 백그라운드. 완료 시 토스트 + onPhotosUpdate
             try {
-                const { results, succeeded, uploaded, order } = await uploadPhotosApi(
+                const { results, succeeded, order } = await uploadPhotosApi(
                     getToken,
                     compressedFiles,
                 )
 
                 if (results.some((r) => !r.success)) {
-                    onRollback()
+                    onPhotosUpdate({ type: 'rollback' })
                     const failedCount = results.filter((r) => !r.success).length
                     const firstError = results.find((r) => r.error)?.error
                     toast.error(`${failedCount}개 업로드 실패: ${firstError ?? '알 수 없는 오류'}`)
                 } else if (succeeded > 0) {
-                    onSuccess(uploaded, order)
+                    onPhotosUpdate({ type: 'success', order: order ?? [] })
                     toast.success(`${succeeded}장의 사진이 업로드되었습니다.`)
                 } else {
-                    onRollback()
+                    onPhotosUpdate({ type: 'rollback' })
                     toast.error('업로드에 실패했습니다. 다시 시도해 주세요.')
                 }
             } finally {
                 previewUrls.forEach((url) => URL.revokeObjectURL(url))
             }
         },
-        [existingFilenames, onOptimisticAdd, onSuccess, onRollback, onOpenChange, getToken],
+        [existingFilenames, onPhotosUpdate, onOpenChange, getToken],
     )
 
     const handleDrop = useCallback(
