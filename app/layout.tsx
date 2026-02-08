@@ -24,7 +24,18 @@ export default function RootLayout({
             <body className="font-sans antialiased flex sm:pb-0">
                 <Nav />
                 <div className="min-h-dvh w-full">{children}</div>
-                <Toaster richColors position="bottom-center" />
+                <Toaster 
+                    richColors 
+                    position="bottom-center" 
+                    closeButton
+                    expand={true}
+                    toastOptions={{
+                        className: 'font-sans',
+                        classNames: {
+                            success: '!bg-green-600 !border-green-700 !text-white',
+                        },
+                    }}
+                />
             </body>
         </html>
     )
