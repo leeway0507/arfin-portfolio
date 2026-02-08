@@ -47,7 +47,12 @@ export function predictFilenames(files: File[], existingFilenames: string[]): st
 
 function getApiBase(): string {
     if (typeof window !== 'undefined') {
-        return process.env.NEXT_PUBLIC_API_BASE ?? window.location.origin
+        const base = process.env.NEXT_PUBLIC_API_BASE ?? window.location.origin
+        // Production: if env points to localhost but we're not on localhost, use current origin
+        if (base.includes('localhost') && !window.location.hostname.includes('localhost')) {
+            return window.location.origin
+        }
+        return base
     }
     return process.env.NEXT_PUBLIC_API_BASE ?? ''
 }

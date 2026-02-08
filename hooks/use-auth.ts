@@ -24,7 +24,17 @@ function isAuthCallbackError(res: AuthCallbackResult): res is AuthCallbackError 
     return 'error' in res && typeof (res as AuthCallbackError).error === 'string'
 }
 
-const getApiBase = () => process.env.NEXT_PUBLIC_API_BASE || ''
+function getApiBase(): string {
+    if (typeof window !== 'undefined') {
+        const base = process.env.NEXT_PUBLIC_API_BASE ?? window.location.origin
+        // Production: if env points to localhost but we're not on localhost, use current origin
+        if (base.includes('localhost') && !window.location.hostname.includes('localhost')) {
+            return window.location.origin
+        }
+        return base
+    }
+    return process.env.NEXT_PUBLIC_API_BASE ?? ''
+}
 
 async function verifyToken(idToken: string): Promise<AuthCallbackSuccess | null> {
     const apiBase = getApiBase()
