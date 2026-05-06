@@ -10,8 +10,9 @@
         "imgopt": "tsx ./image-optimization/main.ts",
         "test": "jest",
         "pages:dev": "pnpm build && wrangler pages dev out",
-        "dev:api": "wrangler pages dev out",
-        "dev:local": "concurrently -n api,next \"pnpm dev:api\" \"pnpm dev\"",
+        "dev:api": "wrangler pages dev out --port 8788",
+        "dev:admin": "concurrently -n next,pages \"pnpm dev\" \"wrangler pages dev out --proxy 3000 --port 8788 --live-reload\"",
+        "dev:local": "pnpm dev:admin",
         "pages:deploy": "pnpm build && wrangler pages deploy out"
     },
     "dependencies": {
@@ -54,6 +55,7 @@
         "ts-node": "^10.9.2",
         "tsx": "^4.19.3",
         "typescript": "^5",
-        "wrangler": "^4"
+        "wrangler": "^4",
+        "agentation": "^3.0.2"
     }
 }

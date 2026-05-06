@@ -5,7 +5,7 @@ import { Upload } from 'lucide-react'
 import { PhotoGallery } from './components/photo-gallery'
 import { PhotoUploadDialog } from './components/photo-upload-dialog'
 import { usePhotoManagement } from './hooks/use-photo-management'
-import { PhotoManagementLayout } from './components/photo-management-layout'
+import { AdminManagementLayout } from '../components/admin-management-layout'
 import { PhotoListSkeleton } from './components/photo-list-skeleton'
 import { ErrorStateView } from './components/error-state-view'
 import { EmptyStateView } from './components/empty-state-view'
@@ -36,38 +36,38 @@ export default function PhotoManagementPage() {
 
     if (isAuthLoading || !user || !isAllowed) {
         return (
-            <PhotoManagementLayout title="사진 관리">
+            <AdminManagementLayout>
                 <PhotoListSkeleton />
-            </PhotoManagementLayout>
+            </AdminManagementLayout>
         )
     }
 
     if (isLoading) {
         return (
-            <PhotoManagementLayout title="사진 관리">
+            <AdminManagementLayout>
                 <PhotoListSkeleton />
-            </PhotoManagementLayout>
+            </AdminManagementLayout>
         )
     }
 
     if (error) {
         return (
-            <PhotoManagementLayout title="사진 관리" headerAction={headerWithSignOut}>
+            <AdminManagementLayout headerAction={headerWithSignOut}>
                 <ErrorStateView message={error} onRetry={loadPhotos} />
-            </PhotoManagementLayout>
+            </AdminManagementLayout>
         )
     }
 
     if (photos.length === 0) {
         return (
-            <PhotoManagementLayout title="사진 관리" headerAction={headerWithSignOut}>
+            <AdminManagementLayout headerAction={headerWithSignOut}>
                 <EmptyStateView
                     message="아직 등록된 사진이 없습니다."
                     subMessage="사진을 업로드해 보세요."
                     action={
                         <Button onClick={() => setUploadDialogOpen(true)}>
                             <Upload className="mr-2 h-4 w-4" />
-                            사진 업로드
+                            업로드
                         </Button>
                     }
                 />
@@ -78,18 +78,17 @@ export default function PhotoManagementPage() {
                     existingFilenames={[]}
                     getToken={getToken}
                 />
-            </PhotoManagementLayout>
+            </AdminManagementLayout>
         )
     }
 
     return (
-        <PhotoManagementLayout
-            title="사진 관리"
+        <AdminManagementLayout
             headerAction={
                 <div className="flex gap-2">
                     <Button onClick={openUploadWithRollback}>
                         <Upload className="mr-2 h-4 w-4" />
-                        사진 업로드
+                        업로드
                     </Button>
                     {headerWithSignOut}
                 </div>
@@ -103,6 +102,6 @@ export default function PhotoManagementPage() {
                 getToken={getToken}
             />
             <PhotoGallery photos={photos} onPhotosChange={setPhotos} getToken={getToken} />
-        </PhotoManagementLayout>
+        </AdminManagementLayout>
     )
 }

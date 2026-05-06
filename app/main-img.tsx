@@ -1,20 +1,52 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { motion } from 'motion/react'
-import Image from 'next/image'
+import { getPublicHomeImage } from '@/lib/apis/home/api'
+import type { HomeImage } from '@/lib/apis/home/types'
+import { HomeImageRenderer } from '@/components/home/home-image-renderer'
 
 export default function MainImage() {
+    const [homeImage, setHomeImage] = useState<HomeImage | null>(null)
+    const [useFallback, setUseFallback] = useState(false)
+
+    useEffect(() => {
+        let mounted = true
+
+        getPublicHomeImage()
+            .then((image) => {
+                if (!mounted) return
+                setHomeImage(image)
+                setUseFallback(false)
+            })
+            .catch(() => {
+                if (mounted) setUseFallback(true)
+            })
+
+        return () => {
+            mounted = false
+        }
+    }, [])
+
+    const imageSrc = useFallback || !homeImage?.imageUrl ? '/main.jpg' : homeImage.imageUrl
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
-            className="w-[95%] max-w-[640px] sm:w-[55%] m-auto"
+            className="w-full"
         >
-            <div className="relative bg-gray-300/50 aspect-[1.53/1]">
-                <Image src="/main.jpg" alt="main" priority fill style={{ objectFit: 'contain' }} />
-            </div>
+            <HomeImageRenderer
+                src={imageSrc}
+                alt={homeImage?.alt ?? 'main'}
+                layout={homeImage?.layout}
+                priority
+                onError={() => {
+                    if (imageSrc !== '/main.jpg') setUseFallback(true)
+                }}
+            />
         </motion.div>
     )
 }

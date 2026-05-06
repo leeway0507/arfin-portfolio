@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
+import { AgentationDev } from '../components/agentation-dev'
 import { Nav } from '../components/nav/nav'
 import { Toaster } from 'sonner'
 
@@ -24,9 +25,9 @@ export default function RootLayout({
             <body className="font-sans antialiased flex sm:pb-0">
                 <Nav />
                 <div className="min-h-dvh w-full">{children}</div>
-                <Toaster 
-                    richColors 
-                    position="bottom-center" 
+                <Toaster
+                    richColors
+                    position="bottom-center"
                     closeButton
                     expand={true}
                     toastOptions={{
@@ -36,6 +37,10 @@ export default function RootLayout({
                         },
                     }}
                 />
+
+                {process.env.NODE_ENV === 'development' &&
+                    <AgentationDev />
+                }
             </body>
         </html>
     )

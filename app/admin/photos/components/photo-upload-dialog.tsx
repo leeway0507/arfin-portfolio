@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import imageCompression from 'browser-image-compression'
 import {
     Dialog,
     DialogContent,
@@ -15,40 +14,12 @@ import { Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { uploadPhotos as uploadPhotosApi, predictFilenames } from '@/lib/apis/photos/api'
 import type { PhotoUpdateAction } from '../hooks/use-photo-management'
-
-const COMPRESSION_OPTIONS = {
-    maxSizeMB: 1,
-    maxWidthOrHeight: 1920,
-    useWebWorker: true,
-    fileType: 'image/webp' as const,
-}
-
-const ACCEPT_TYPES = 'image/jpeg,image/png,image/webp,image/gif'
-const ACCEPT_EXT = '.jpg,.jpeg,.png,.webp,.gif'
-
-function filterImageFiles(files: FileList | null): File[] {
-    if (!files || files.length === 0) return []
-    return Array.from(files).filter((f) => f.type.startsWith('image/'))
-}
-
-function getWebpFileName(originalName: string): string {
-    const stem = originalName.replace(/\.[^.]+$/, '') || 'image'
-    return `${stem}.webp`
-}
-
-async function compressOneFile(
-    file: File,
-    options: {
-        maxSizeMB: number
-        maxWidthOrHeight: number
-        useWebWorker: boolean
-        fileType: 'image/webp'
-    },
-): Promise<File> {
-    const compressed = await imageCompression(file, options)
-    const correctName = getWebpFileName(file.name)
-    return new File([compressed], correctName, { type: 'image/webp' })
-}
+import {
+    ACCEPTED_IMAGE_EXTENSIONS,
+    ACCEPTED_IMAGE_MIME_TYPES,
+    compressImageFile,
+    filterImageFiles,
+} from '@/lib/images/compression'
 
 interface PhotoUploadDialogProps {
     open: boolean
@@ -84,7 +55,7 @@ export function PhotoUploadDialog({
             const compressedFiles: File[] = []
             for (let i = 0; i < imageFiles.length; i++) {
                 try {
-                    compressedFiles.push(await compressOneFile(imageFiles[i], COMPRESSION_OPTIONS))
+                    compressedFiles.push(await compressImageFile(imageFiles[i]))
                 } catch {
                     setError(`이미지 압축 실패: ${imageFiles[i].name}`)
                     setIsConverting(false)
@@ -160,7 +131,7 @@ export function PhotoUploadDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>사진 업로드</DialogTitle>
+                    <DialogTitle>업로드</DialogTitle>
                     <DialogDescription>
                         이미지 파일(jpg, png, webp, gif)을 선택하거나 드래그하여 놓으세요. 업로드 시
                         자동으로 최적화됩니다.
@@ -180,7 +151,7 @@ export function PhotoUploadDialog({
                 >
                     <input
                         type="file"
-                        accept={ACCEPT_TYPES}
+                        accept={ACCEPTED_IMAGE_MIME_TYPES}
                         multiple
                         className="absolute inset-0 cursor-pointer opacity-0"
                         onChange={handleFileChange}
@@ -204,7 +175,7 @@ export function PhotoUploadDialog({
                                 파일을 드래그하거나 클릭하여 선택
                             </p>
                             <p className="mt-1 text-center text-xs text-muted-foreground">
-                                {ACCEPT_EXT} 지원
+                                {ACCEPTED_IMAGE_EXTENSIONS} 지원
                             </p>
                         </>
                     )}

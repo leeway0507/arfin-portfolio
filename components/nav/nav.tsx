@@ -4,10 +4,11 @@ import { motion, AnimatePresence } from 'motion/react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
 import About from './about'
 import Contact from './contact'
 
-export function Nav() {
+export function Nav({ className, isPreview, forceMode }: { className?: string; isPreview?: boolean; forceMode?: 'pc' | 'mobile' }) {
     const [openAbout, setOpenAbout] = useState(false)
     const [openContact, setOpenContact] = useState(false)
     const pathName = usePathname()
@@ -15,6 +16,7 @@ export function Nav() {
     const openModal = openAbout || openContact
 
     useEffect(() => {
+        if (isPreview) return
         if (openModal) {
             document.documentElement.style.overflow = 'hidden'
         } else {
@@ -25,19 +27,24 @@ export function Nav() {
         return () => {
             document.documentElement.style.overflow = ''
         }
-    }, [openModal])
+    }, [openModal, isPreview])
 
     const closeModal = () => {
         setOpenAbout(false)
         setOpenContact(false)
     }
 
-    const height = 'h-[2.1rem] sm:h-[4rem] '
+    const isMobile = forceMode === 'mobile' || (!forceMode && typeof window !== 'undefined' && window.innerWidth < 640)
+    const height = forceMode ? (forceMode === 'mobile' ? 'h-[2.1rem]' : 'h-[4rem]') : 'h-[2.1rem] sm:h-[4rem]'
+
     return (
-        <div className="z-50 fixed top-0 w-dvw inset-x-0">
+        <div className={cn("z-50 fixed top-0 w-dvw inset-x-0", isPreview ? "!absolute !w-full" : "", className)}>
             {pathName !== '/' && (
                 <div
-                    className={`z-50 absolute top-0 left-0 px-[1rem] sm:px-[2rem] flex items-center justify-start ${height}`}
+                    className={cn(
+                        `z-50 absolute top-0 left-0 px-[1rem] sm:px-[2rem] flex items-center justify-start ${height}`,
+                        isPreview && (forceMode === 'mobile' ? "!px-4 !pt-8" : "!px-[2rem]")
+                    )}
                 >
                     <Link href={'/'} className={`font-bold flex items-center`} onClick={closeModal}>
                         Arfin Yoon
@@ -46,7 +53,10 @@ export function Nav() {
             )}
             {openModal ? (
                 <div
-                    className={`z-50 absolute top-0 right-0 pe-[1rem] sm:pe-[2rem] flex items-center justify-end ${height}`}
+                    className={cn(
+                        `z-50 absolute top-0 right-0 pe-[1rem] sm:pe-[2rem] flex items-center justify-end ${height}`,
+                        isPreview && (forceMode === 'mobile' ? "!pe-4 !pt-8" : "!pe-[2rem]")
+                    )}
                 >
                     <button onClick={closeModal} className={`font-bold`}>
                         Close
@@ -55,7 +65,10 @@ export function Nav() {
             ) : (
                 <>
                     <div
-                        className={`z-50 absolute top-0 right-0 px-[1rem] sm:pe-[2rem] flex items-center justify-end ${height} text-black/50`}
+                        className={cn(
+                            `z-50 absolute top-0 right-0 px-[1rem] sm:pe-[2rem] flex items-center justify-end ${height} text-black/50`,
+                            isPreview && (forceMode === 'mobile' ? "!px-4 !pt-8" : "!pe-[2rem]")
+                        )}
                     >
                         <button
                             onClick={() => setOpenContact((v) => !v)}
@@ -65,9 +78,15 @@ export function Nav() {
                         </button>
                     </div>
                     <div
-                        className={`z-20 fixed sm:absolute max-sm:bottom-4 sm:top-0 w-full inset-x-0 `}
+                        className={cn(
+                            `z-20 fixed sm:absolute max-sm:bottom-4 sm:top-0 w-full inset-x-0 `,
+                            isPreview && (forceMode === 'mobile' ? "!absolute !bottom-8 !top-auto" : "!absolute !top-0")
+                        )}
                     >
-                        <div className={`rounded-2xl mx-4 bg-white/60 backdrop-blur-sm ${height}`}>
+                        <div className={cn(
+                            `rounded-2xl mx-4 bg-white/60 backdrop-blur-sm ${height}`,
+                            isPreview && (forceMode === 'mobile' ? "!mx-2" : "!mx-4")
+                        )}>
                             <div className="flex mx-auto items-center justify-center gap-4 h-full text-black/50 ">
                                 <button onClick={() => setOpenAbout((v) => !v)}>About</button>
                                 <Link
@@ -92,7 +111,7 @@ export function Nav() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.3 }}
-                        className={`absolute z-10 top-0 inset-x-0 w-[calc(100dvw)] h-[calc(100dvh)] backdrop-blur-xl py-2 bg-white/50 overflow-scroll`}
+                        className={cn(`absolute z-10 top-0 inset-x-0 w-[calc(100dvw)] h-[calc(100dvh)] backdrop-blur-xl py-2 bg-white/50 overflow-scroll`, isPreview && "w-full h-full")}
                     >
                         <div className="pt-[3rem] px-[2rem] flex justify-center flex-col w-full text-center ">
                             {openAbout ? <About /> : openContact && <Contact />}
