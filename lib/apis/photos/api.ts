@@ -1,6 +1,7 @@
 import type { PhotoListItem } from './types'
 
 const IMAGE_EXT = /\.(webp|jpg|jpeg|png|gif)$/i
+const DEFAULT_IMAGE_BASE_URL = 'https://images.arfinyoon.com'
 
 /** 경로만 제거하여 원본 파일명 반환 (서버와 동일 로직) */
 function getOriginalFilename(name: string): string {
@@ -46,20 +47,24 @@ export function predictFilenames(files: File[], existingFilenames: string[]): st
 }
 
 function getApiBase(): string {
+    const configuredBase = process.env.NEXT_PUBLIC_API_BASE?.trim()
     if (typeof window !== 'undefined') {
-        const base = process.env.NEXT_PUBLIC_API_BASE ?? window.location.origin
+        const base = configuredBase || window.location.origin
         // Production: if env points to localhost but we're not on localhost, use current origin
         if (base.includes('localhost') && !window.location.hostname.includes('localhost')) {
             return window.location.origin
         }
         return base
     }
-    return process.env.NEXT_PUBLIC_API_BASE ?? ''
+    return configuredBase || ''
 }
 
 /** Admin용 이미지 URL. NEXT_PUBLIC_IMAGE_URL(CDN)에서 직접 로드 */
 function buildImageUrl(filename: string): string {
-    const baseUrl = (process.env.NEXT_PUBLIC_IMAGE_URL ?? '').replace(/\/$/, '')
+    const baseUrl = (process.env.NEXT_PUBLIC_IMAGE_URL?.trim() || DEFAULT_IMAGE_BASE_URL).replace(
+        /\/$/,
+        '',
+    )
     return `${baseUrl}/${encodeURIComponent(filename)}`
 }
 

@@ -1,0 +1,21 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "arfin-portfolio",
+	"pages_build_output_dir": "./out",
+	"compatibility_date": "2025-02-06",
+	// 로컬: 로컬 R2(비어 있음). 원격 R2는 배포 후에만 사용됨.
+	// remote proxy session 이슈로 로컬에서 remote: true 시 API 실패할 수 있음
+	"r2_buckets": [
+		{
+			"binding": "PORTFOLIO",
+			"bucket_name": "arfinyoon",
+			"remote": true
+		}
+	],
+	"vars": {
+		"PORTFOLIO_PREFIX": "",
+		"FIREBASE_API_KEY": "AIzaSyBE2uDMey59k9ER5egLBOXQA0kqoLKHbIM",
+		"ALLOWED_ADMIN_EMAILS": "679oose@gmail.com,leeway0507@gmail.com,arfinyoon@gmail.com",
+		"NEXT_PUBLIC_IMAGE_URL": "https://images.arfinyoon.com"
+	}
+}

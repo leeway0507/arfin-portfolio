@@ -3,20 +3,25 @@ import type { HomeImageLayout } from './types'
 import { normalizeHomeImageLayout } from './layout'
 
 const DEFAULT_HOME_ALT = 'Arfin Yoon main image'
+const DEFAULT_IMAGE_BASE_URL = 'https://images.arfinyoon.com'
 
 function getApiBase(): string {
+    const configuredBase = process.env.NEXT_PUBLIC_API_BASE?.trim()
     if (typeof window !== 'undefined') {
-        const base = process.env.NEXT_PUBLIC_API_BASE ?? window.location.origin
+        const base = configuredBase || window.location.origin
         if (base.includes('localhost') && !window.location.hostname.includes('localhost')) {
             return window.location.origin
         }
         return base
     }
-    return process.env.NEXT_PUBLIC_API_BASE ?? ''
+    return configuredBase || ''
 }
 
 function buildImageUrl(imageKey: string, updatedAt: string | null): string {
-    const baseUrl = (process.env.NEXT_PUBLIC_IMAGE_URL ?? '').replace(/\/$/, '')
+    const baseUrl = (process.env.NEXT_PUBLIC_IMAGE_URL?.trim() || DEFAULT_IMAGE_BASE_URL).replace(
+        /\/$/,
+        '',
+    )
     const path = imageKey
         .split('/')
         .map((part) => encodeURIComponent(part))

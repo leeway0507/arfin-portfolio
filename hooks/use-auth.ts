@@ -31,15 +31,16 @@ function isAuthCallbackError(res: AuthCallbackResult): res is AuthCallbackError 
 }
 
 function getApiBase(): string {
+    const configuredBase = process.env.NEXT_PUBLIC_API_BASE?.trim()
     if (typeof window !== 'undefined') {
-        const base = process.env.NEXT_PUBLIC_API_BASE ?? window.location.origin
+        const base = configuredBase || window.location.origin
         // Production: if env points to localhost but we're not on localhost, use current origin
         if (base.includes('localhost') && !window.location.hostname.includes('localhost')) {
             return window.location.origin
         }
         return base
     }
-    return process.env.NEXT_PUBLIC_API_BASE ?? ''
+    return configuredBase || ''
 }
 
 async function verifyToken(idToken: string): Promise<AuthCallbackSuccess | null> {
