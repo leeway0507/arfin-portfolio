@@ -16,10 +16,7 @@ function getApiBase(): string {
 }
 
 function buildImageUrl(imageKey: string, updatedAt: string | null): string {
-    const baseUrl = (
-        (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_IMAGE_URL) ||
-        ''
-    ).replace(/\/$/, '')
+    const baseUrl = (process.env.NEXT_PUBLIC_IMAGE_URL ?? '').replace(/\/$/, '')
     const path = imageKey
         .split('/')
         .map((part) => encodeURIComponent(part))

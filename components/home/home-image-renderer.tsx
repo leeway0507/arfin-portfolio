@@ -25,21 +25,25 @@ export function HomeImageRenderer({
     forceMode,
     onError,
 }: HomeImageRendererProps) {
-    const width = `${layout.mobileWidthPercent}%`
     const isLocalPreview = src.startsWith('blob:') || src.startsWith('data:')
+    const widthClass =
+        forceMode === 'pc'
+            ? '[width:var(--home-image-desktop-width)]'
+            : forceMode === 'mobile'
+              ? '[width:var(--home-image-mobile-width)]'
+              : '[width:var(--home-image-mobile-width)] sm:[width:var(--home-image-desktop-width)]'
 
     return (
         <div
             className={cn(
                 'm-auto',
-                !forceMode && 'sm:[width:var(--home-image-desktop-width)]',
-                forceMode === 'pc' && '[width:var(--home-image-desktop-width)]',
+                widthClass,
                 className,
             )}
             style={
                 {
-                    width: forceMode === 'pc' ? 'var(--home-image-desktop-width)' : width,
                     maxWidth: `${layout.maxWidth}px`,
+                    '--home-image-mobile-width': `${layout.mobileWidthPercent}%`,
                     '--home-image-desktop-width': `${layout.desktopWidthPercent}%`,
                 } as CSSProperties
             }

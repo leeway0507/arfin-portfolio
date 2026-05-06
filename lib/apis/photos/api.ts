@@ -59,10 +59,7 @@ function getApiBase(): string {
 
 /** Admin용 이미지 URL. NEXT_PUBLIC_IMAGE_URL(CDN)에서 직접 로드 */
 function buildImageUrl(filename: string): string {
-    const baseUrl = (
-        (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_IMAGE_URL) ||
-        ''
-    ).replace(/\/$/, '')
+    const baseUrl = (process.env.NEXT_PUBLIC_IMAGE_URL ?? '').replace(/\/$/, '')
     return `${baseUrl}/${encodeURIComponent(filename)}`
 }
 

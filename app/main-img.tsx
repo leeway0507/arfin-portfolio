@@ -9,6 +9,7 @@ import { HomeImageRenderer } from '@/components/home/home-image-renderer'
 export default function MainImage() {
     const [homeImage, setHomeImage] = useState<HomeImage | null>(null)
     const [useFallback, setUseFallback] = useState(false)
+    const [isResolved, setIsResolved] = useState(false)
 
     useEffect(() => {
         let mounted = true
@@ -18,15 +19,20 @@ export default function MainImage() {
                 if (!mounted) return
                 setHomeImage(image)
                 setUseFallback(false)
+                setIsResolved(true)
             })
             .catch(() => {
-                if (mounted) setUseFallback(true)
+                if (!mounted) return
+                setUseFallback(true)
+                setIsResolved(true)
             })
 
         return () => {
             mounted = false
         }
     }, [])
+
+    if (!isResolved) return null
 
     const imageSrc = useFallback || !homeImage?.imageUrl ? '/main.jpg' : homeImage.imageUrl
 
