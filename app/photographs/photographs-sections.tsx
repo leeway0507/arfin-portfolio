@@ -87,7 +87,7 @@ export function PhotographsSections({ sections }: PhotographsSectionsProps) {
 
 function PhotographsPageFrame({ children }: { children: React.ReactNode }) {
     return (
-        <main className="min-h-dvh overflow-hidden pb-28 pt-16 font-['Pretendard_Variable'] sm:pb-16">
+        <main className="min-h-dvh overflow-hidden pb-28 pt-16 sm:pb-16">
             <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-8">
                 <h1 className="sr-only">Photographs</h1>
                 {children}

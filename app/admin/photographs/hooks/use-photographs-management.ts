@@ -1,9 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { useAuth } from '@/hooks/use-auth'
 import {
     PhotographApiError,
     createPhotographProject,
@@ -27,14 +25,19 @@ import type {
     PhotographSectionCreation,
     PhotographSectionMetadata,
 } from '@/lib/apis/photographs/types'
+import { usePhotographManagementOperation } from './use-photograph-management-operation'
 import { compressPhotographAssets } from '../lib/compress-photograph-assets'
 import {
-    getPhotographManagementChangeState,
+    getPhotographManagementOperationProgress,
+    isPhotographManagementOperation,
+} from '../lib/photograph-management-operation'
+import {
     hasPhotographOrderChanges,
     mapProjectsToDraftOrder,
     mapSectionsToDraftOrder,
     movePhotographOrderId,
 } from '../lib/photograph-order-state'
+import { getPhotographManagementPolicy } from '../lib/photograph-management-policy'
 import {
     getPhotographWorkspaceSelection,
     getProjectSelectionAfterDelete,
@@ -43,13 +46,12 @@ import {
     replacePhotographProject,
     replacePhotographSection,
 } from '../lib/photographs-management-state'
-import type { PhotographManagementChangeMode } from '../types'
+import type { PhotographManagementChangeMode, PhotographsManagementModels } from '../types'
 
 type ProjectCreationInput = Omit<PhotographProjectCreation, 'sectionId'>
+type GetAdminIdToken = () => Promise<string>
 
-export function usePhotographsManagement() {
-    const router = useRouter()
-    const { user, isLoading: isAuthLoading, isAllowed, signOut } = useAuth()
+export function usePhotographsManagement(getIdToken: GetAdminIdToken): PhotographsManagementModels {
     const [savedSections, setSavedSections] = useState<PhotographSectionMetadata[]>([])
     const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null)
     const selectedSectionIdRef = useRef<string | null>(null)
@@ -60,23 +62,9 @@ export function usePhotographsManagement() {
     const [projectDraft, setProjectDraft] = useState<PhotographProjectMetadata | null>(null)
     const [etag, setEtag] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
-    const [isSaving, setIsSaving] = useState(false)
-    const [isUploadingAsset, setIsUploadingAsset] = useState(false)
-    const [isCreatingProject, setIsCreatingProject] = useState(false)
-    const [isCreatingSection, setIsCreatingSection] = useState(false)
-    const [isManagingProject, setIsManagingProject] = useState(false)
-    const [isManagingSection, setIsManagingSection] = useState(false)
-    const [isManagingAssets, setIsManagingAssets] = useState(false)
-    const [assetUploadProgress, setAssetUploadProgress] = useState<string | null>(null)
-    const [projectCreateProgress, setProjectCreateProgress] = useState<string | null>(null)
+    const { operation, startOperation } = usePhotographManagementOperation()
     const [isConflict, setIsConflict] = useState(false)
     const [error, setError] = useState<string | null>(null)
-
-    useEffect(() => {
-        if (!isAuthLoading && (!user || !isAllowed)) {
-            router.replace('/admin')
-        }
-    }, [isAuthLoading, user, isAllowed, router])
 
     const selectProjectDraft = useCallback((project: PhotographProjectMetadata | null) => {
         selectedProjectIdRef.current = project?.id ?? null
@@ -102,8 +90,6 @@ export function usePhotographsManagement() {
     }, [selectProjectDraft])
 
     const loadPhotographs = useCallback(async () => {
-        if (!user || !isAllowed) return
-
         setIsLoading(true)
         setError(null)
         setIsConflict(false)
@@ -133,13 +119,11 @@ export function usePhotographsManagement() {
         } finally {
             setIsLoading(false)
         }
-    }, [user, isAllowed, clearSelection, selectSectionDraft])
+    }, [clearSelection, selectSectionDraft])
 
     useEffect(() => {
-        if (user && isAllowed) {
-            loadPhotographs()
-        }
-    }, [user, isAllowed, loadPhotographs])
+        loadPhotographs()
+    }, [loadPhotographs])
 
     const savedSection = useMemo(
         () => savedSections.find((section) => section.id === selectedSectionId) ?? null,
@@ -185,44 +169,46 @@ export function usePhotographsManagement() {
             ),
         [savedSections, sectionOrderDraft],
     )
-    const {
-        changeMode,
-        hasInvalidConcurrentChanges,
-    }: {
-        changeMode: PhotographManagementChangeMode
-        hasInvalidConcurrentChanges: boolean
-    } = getPhotographManagementChangeState({
-        hasProjectChanges,
-        hasProjectOrderChanges,
-        hasSectionOrderChanges,
-    })
-    const hasChanges = hasProjectChanges || hasProjectOrderChanges || hasSectionOrderChanges
     const isDraftValid = Boolean(
         projectDraft &&
         isValidProjectText(projectDraft.publication) &&
         isValidProjectText(projectDraft.title),
     )
-    const isWriteInProgress =
-        isSaving ||
-        isUploadingAsset ||
-        isCreatingProject ||
-        isCreatingSection ||
-        isManagingProject ||
-        isManagingSection ||
-        isManagingAssets
-    const isNavigationBlocked = hasChanges || isWriteInProgress || isConflict
-    const isProjectOrderEditingDisabled =
-        orderedProjects.length < 2 ||
-        hasProjectChanges ||
-        hasSectionOrderChanges ||
-        isWriteInProgress ||
-        isConflict
-    const isSectionOrderEditingDisabled =
-        orderedSections.length < 2 ||
-        hasProjectChanges ||
-        hasProjectOrderChanges ||
-        isWriteInProgress ||
-        isConflict
+    const { changeState, capabilities } = getPhotographManagementPolicy({
+        hasProjectChanges,
+        hasProjectOrderChanges,
+        hasSectionOrderChanges,
+        isDraftValid,
+        projectCount: orderedProjects.length,
+        sectionCount: orderedSections.length,
+        operation,
+        isConflict,
+    })
+    const changeMode: PhotographManagementChangeMode = changeState.mode
+    const hasChanges = changeState.kind !== 'clean'
+    const hasInvalidConcurrentChanges = changeState.kind === 'invalid-concurrent'
+    const isSaving = isPhotographManagementOperation(operation, 'saving-changes')
+    const isUploadingAsset = isPhotographManagementOperation(operation, 'uploading-assets')
+    const isCreatingProject = isPhotographManagementOperation(operation, 'creating-project')
+    const isCreatingSection = isPhotographManagementOperation(operation, 'creating-section')
+    const isManagingProject = isPhotographManagementOperation(operation, 'deleting-project')
+    const isManagingSection = isPhotographManagementOperation(
+        operation,
+        'renaming-section',
+        'deleting-section',
+    )
+    const isManagingAssets = isPhotographManagementOperation(operation, 'managing-assets')
+    const assetUploadProgress =
+        operation.kind === 'uploading-assets'
+            ? getPhotographManagementOperationProgress(operation)
+            : null
+    const projectCreateProgress =
+        operation.kind === 'creating-project'
+            ? getPhotographManagementOperationProgress(operation)
+            : null
+    const isNavigationBlocked = !capabilities.canNavigate
+    const isProjectOrderEditingDisabled = !capabilities.canReorderProjects
+    const isSectionOrderEditingDisabled = !capabilities.canReorderSections
 
     const selectSection = useCallback(
         (sectionId: string) => {
@@ -272,17 +258,10 @@ export function usePhotographsManagement() {
 
     const updateProjectDraft = useCallback(
         (updateProject: (project: PhotographProjectMetadata) => PhotographProjectMetadata) => {
-            if (
-                hasProjectOrderChanges ||
-                hasSectionOrderChanges ||
-                isWriteInProgress ||
-                isConflict
-            ) {
-                return
-            }
+            if (!capabilities.canEditProject) return
             setProjectDraft((project) => (project ? updateProject(project) : project))
         },
-        [hasProjectOrderChanges, hasSectionOrderChanges, isConflict, isWriteInProgress],
+        [capabilities.canEditProject],
     )
 
     const reorderProjects = useCallback(
@@ -314,15 +293,7 @@ export function usePhotographsManagement() {
     )
 
     const saveChanges = useCallback(async () => {
-        if (
-            !user ||
-            !etag ||
-            !hasChanges ||
-            !changeMode ||
-            hasInvalidConcurrentChanges ||
-            isConflict ||
-            isWriteInProgress
-        ) {
+        if (!etag || !changeMode || !capabilities.canSaveChanges) {
             if (hasInvalidConcurrentChanges) {
                 toast.error('서로 다른 종류의 변경사항을 각각 저장하거나 취소해 주세요.')
             }
@@ -333,11 +304,13 @@ export function usePhotographsManagement() {
         }
         if (changeMode === 'project-order' && !selectedSectionId) return
 
-        setIsSaving(true)
+        const operationLease = startOperation({ kind: 'saving-changes', changeMode })
+        if (!operationLease) return
+
         try {
             if (changeMode === 'section-order') {
                 const result = await updatePhotographSectionOrder(
-                    () => user.getIdToken(),
+                    getIdToken,
                     { sectionIds: sectionOrderDraft },
                     etag,
                 )
@@ -361,7 +334,7 @@ export function usePhotographsManagement() {
 
             if (changeMode === 'project-order') {
                 const result = await updatePhotographProjectOrder(
-                    () => user.getIdToken(),
+                    getIdToken,
                     {
                         sectionId: selectedSectionId!,
                         projectIds: projectOrderDraft,
@@ -380,7 +353,7 @@ export function usePhotographsManagement() {
             }
 
             const result = await updatePhotographProject(
-                () => user.getIdToken(),
+                getIdToken,
                 {
                     sectionId: selectedSectionId!,
                     projectId: projectDraft!.id,
@@ -405,27 +378,26 @@ export function usePhotographsManagement() {
                 'Photographs 변경사항 저장에 실패했습니다.',
             )
         } finally {
-            setIsSaving(false)
+            operationLease.finish()
         }
     }, [
         changeMode,
+        capabilities.canSaveChanges,
         etag,
-        hasChanges,
         hasInvalidConcurrentChanges,
-        isConflict,
-        isWriteInProgress,
         isDraftValid,
         projectOrderDraft,
         projectDraft,
         sectionOrderDraft,
         selectedProjectId,
         selectedSectionId,
-        user,
+        startOperation,
+        getIdToken,
     ])
 
     const resetChanges = useCallback(() => {
-        if (isWriteInProgress) return
-        if (hasInvalidConcurrentChanges) {
+        if (!capabilities.canResetChanges) {
+            if (!hasInvalidConcurrentChanges) return
             toast.error('서로 다른 종류의 변경사항을 각각 취소해 주세요.')
             return
         }
@@ -441,8 +413,8 @@ export function usePhotographsManagement() {
         setProjectDraft(savedProject)
     }, [
         changeMode,
+        capabilities.canResetChanges,
         hasInvalidConcurrentChanges,
-        isWriteInProgress,
         savedProject,
         savedSection,
         savedSections,
@@ -453,28 +425,25 @@ export function usePhotographsManagement() {
             target: PhotographAssetTarget,
             assets: PhotographAssetUploadItem[],
         ): Promise<boolean> => {
-            if (
-                !user ||
-                !selectedSectionId ||
-                !projectDraft ||
-                !etag ||
-                hasChanges ||
-                isConflict ||
-                isWriteInProgress
-            ) {
+            if (!selectedSectionId || !projectDraft || !etag || !capabilities.canNavigate) {
                 return false
             }
 
-            setIsUploadingAsset(true)
+            const operationLease = startOperation({
+                kind: 'uploading-assets',
+                progress: null,
+            })
+            if (!operationLease) return false
+
             try {
                 const compressedAssets = await compressPhotographAssets(
                     assets,
                     (currentCount, totalCount) =>
-                        setAssetUploadProgress(`최적화 중 ${currentCount}/${totalCount}`),
+                        operationLease.updateProgress(`최적화 중 ${currentCount}/${totalCount}`),
                 )
-                setAssetUploadProgress(`업로드 중 ${compressedAssets.length}장`)
+                operationLease.updateProgress(`업로드 중 ${compressedAssets.length}장`)
                 const result = await uploadPhotographAssets(
-                    () => user.getIdToken(),
+                    getIdToken,
                     {
                         sectionId: selectedSectionId,
                         projectId: projectDraft.id,
@@ -502,17 +471,22 @@ export function usePhotographsManagement() {
                 )
                 return false
             } finally {
-                setIsUploadingAsset(false)
-                setAssetUploadProgress(null)
+                operationLease.finish()
             }
         },
-        [etag, hasChanges, isConflict, isWriteInProgress, projectDraft, selectedSectionId, user],
+        [
+            capabilities.canNavigate,
+            etag,
+            projectDraft,
+            selectedSectionId,
+            startOperation,
+            getIdToken,
+        ],
     )
 
     const manageProjectAssets = useCallback(
         async (update: PhotographAssetManagementUpdate): Promise<boolean> => {
             if (
-                !user ||
                 !etag ||
                 !selectedSectionId ||
                 !projectDraft ||
@@ -524,9 +498,11 @@ export function usePhotographsManagement() {
                 return false
             }
 
-            setIsManagingAssets(true)
+            const operationLease = startOperation({ kind: 'managing-assets' })
+            if (!operationLease) return false
+
             try {
-                const result = await managePhotographAssets(() => user.getIdToken(), update, etag)
+                const result = await managePhotographAssets(getIdToken, update, etag)
                 setProjectDraft(result.project)
                 setSavedSections((sections) =>
                     replacePhotographProject(sections, selectedSectionId, result.project),
@@ -547,28 +523,42 @@ export function usePhotographsManagement() {
                 )
                 return false
             } finally {
-                setIsManagingAssets(false)
+                operationLease.finish()
             }
         },
-        [etag, hasChanges, isConflict, isNavigationBlocked, projectDraft, selectedSectionId, user],
+        [
+            etag,
+            hasChanges,
+            isConflict,
+            isNavigationBlocked,
+            projectDraft,
+            selectedSectionId,
+            startOperation,
+            getIdToken,
+        ],
     )
 
     const createProject = useCallback(
         async (creation: ProjectCreationInput): Promise<boolean> => {
-            if (!user || !selectedSectionId || !savedSection || !etag || isNavigationBlocked) {
+            if (!selectedSectionId || !savedSection || !etag || isNavigationBlocked) {
                 notifyNavigationBlockedMessage(hasChanges, isConflict)
                 return false
             }
 
-            setIsCreatingProject(true)
+            const operationLease = startOperation({
+                kind: 'creating-project',
+                progress: null,
+            })
+            if (!operationLease) return false
+
             try {
                 const [compressedHero] = await compressPhotographAssets(
                     [{ file: creation.heroFile, alt: creation.heroAlt }],
-                    () => setProjectCreateProgress('대표 이미지 최적화 중'),
+                    () => operationLease.updateProgress('대표 이미지 최적화 중'),
                 )
-                setProjectCreateProgress('소주제 저장 중')
+                operationLease.updateProgress('소주제 저장 중')
                 const result = await createPhotographProject(
-                    () => user.getIdToken(),
+                    getIdToken,
                     {
                         sectionId: selectedSectionId,
                         publication: creation.publication.trim(),
@@ -594,8 +584,7 @@ export function usePhotographsManagement() {
                 )
                 return false
             } finally {
-                setIsCreatingProject(false)
-                setProjectCreateProgress(null)
+                operationLease.finish()
             }
         },
         [
@@ -606,21 +595,24 @@ export function usePhotographsManagement() {
             savedSection,
             selectProjectDraft,
             selectedSectionId,
-            user,
+            startOperation,
+            getIdToken,
         ],
     )
 
     const createSection = useCallback(
         async (creation: PhotographSectionCreation): Promise<boolean> => {
-            if (!user || !etag || isNavigationBlocked) {
+            if (!etag || isNavigationBlocked) {
                 notifyNavigationBlockedMessage(hasChanges, isConflict)
                 return false
             }
 
-            setIsCreatingSection(true)
+            const operationLease = startOperation({ kind: 'creating-section' })
+            if (!operationLease) return false
+
             try {
                 const result = await createPhotographSection(
-                    () => user.getIdToken(),
+                    getIdToken,
                     { title: creation.title.trim() },
                     etag,
                 )
@@ -638,23 +630,33 @@ export function usePhotographsManagement() {
                 )
                 return false
             } finally {
-                setIsCreatingSection(false)
+                operationLease.finish()
             }
         },
-        [etag, hasChanges, isConflict, isNavigationBlocked, selectSectionDraft, user],
+        [
+            etag,
+            hasChanges,
+            isConflict,
+            isNavigationBlocked,
+            selectSectionDraft,
+            startOperation,
+            getIdToken,
+        ],
     )
 
     const renameSection = useCallback(
         async (sectionId: string, title: string): Promise<boolean> => {
-            if (!user || !etag || sectionId !== selectedSectionId || isNavigationBlocked) {
+            if (!etag || sectionId !== selectedSectionId || isNavigationBlocked) {
                 notifyNavigationBlockedMessage(hasChanges, isConflict)
                 return false
             }
 
-            setIsManagingSection(true)
+            const operationLease = startOperation({ kind: 'renaming-section' })
+            if (!operationLease) return false
+
             try {
                 const result = await renamePhotographSection(
-                    () => user.getIdToken(),
+                    getIdToken,
                     { sectionId, title: title.trim() },
                     etag,
                 )
@@ -677,7 +679,7 @@ export function usePhotographsManagement() {
                 )
                 return false
             } finally {
-                setIsManagingSection(false)
+                operationLease.finish()
             }
         },
         [
@@ -688,13 +690,14 @@ export function usePhotographsManagement() {
             selectSectionDraft,
             selectedProjectId,
             selectedSectionId,
-            user,
+            startOperation,
+            getIdToken,
         ],
     )
 
     const deleteSection = useCallback(
         async (sectionId: string): Promise<boolean> => {
-            if (!user || !etag || sectionId !== selectedSectionId || isNavigationBlocked) {
+            if (!etag || sectionId !== selectedSectionId || isNavigationBlocked) {
                 notifyNavigationBlockedMessage(hasChanges, isConflict)
                 return false
             }
@@ -702,13 +705,11 @@ export function usePhotographsManagement() {
             const deletingSection = savedSections.find((section) => section.id === sectionId)
             if (!deletingSection || deletingSection.projects.length > 0) return false
 
-            setIsManagingSection(true)
+            const operationLease = startOperation({ kind: 'deleting-section' })
+            if (!operationLease) return false
+
             try {
-                const result = await deletePhotographSection(
-                    () => user.getIdToken(),
-                    { sectionId },
-                    etag,
-                )
+                const result = await deletePhotographSection(getIdToken, { sectionId }, etag)
                 const nextSelection = getSectionSelectionAfterDelete(
                     savedSections,
                     sectionId,
@@ -733,7 +734,7 @@ export function usePhotographsManagement() {
                 )
                 return false
             } finally {
-                setIsManagingSection(false)
+                operationLease.finish()
             }
         },
         [
@@ -745,14 +746,14 @@ export function usePhotographsManagement() {
             savedSections,
             selectSectionDraft,
             selectedSectionId,
-            user,
+            startOperation,
+            getIdToken,
         ],
     )
 
     const deleteProject = useCallback(
         async (projectId: string): Promise<boolean> => {
             if (
-                !user ||
                 !etag ||
                 !selectedSectionId ||
                 projectId !== selectedProjectId ||
@@ -767,10 +768,12 @@ export function usePhotographsManagement() {
             )
             if (!savedSection || !deletingProject) return false
 
-            setIsManagingProject(true)
+            const operationLease = startOperation({ kind: 'deleting-project' })
+            if (!operationLease) return false
+
             try {
                 const result = await deletePhotographProject(
-                    () => user.getIdToken(),
+                    getIdToken,
                     { sectionId: selectedSectionId, projectId },
                     etag,
                 )
@@ -804,7 +807,7 @@ export function usePhotographsManagement() {
                 )
                 return false
             } finally {
-                setIsManagingProject(false)
+                operationLease.finish()
             }
         },
         [
@@ -816,58 +819,86 @@ export function usePhotographsManagement() {
             selectProjectDraft,
             selectedProjectId,
             selectedSectionId,
-            user,
+            startOperation,
+            getIdToken,
         ],
     )
 
     return {
-        sections: orderedSections,
-        selectedSectionId,
-        sectionTitle: savedSection?.title ?? null,
-        projects: orderedProjects,
-        selectedProjectId,
-        projectDraft,
-        updateProjectDraft,
-        selectSection,
-        selectProject,
-        reorderSections,
-        reorderProjects,
-        notifyNavigationBlocked,
-        createSection,
-        renameSection,
-        deleteSection,
-        createProject,
-        deleteProject,
-        hasChanges,
-        hasProjectChanges,
-        hasProjectOrderChanges,
-        hasSectionOrderChanges,
-        changeMode,
-        isDraftValid,
-        isLoading,
-        isSaving,
-        isUploadingAsset,
-        isCreatingProject,
-        isCreatingSection,
-        isManagingProject,
-        isManagingSection,
-        isManagingAssets,
-        assetUploadProgress,
-        projectCreateProgress,
-        isNavigationBlocked,
-        isSectionOrderEditingDisabled,
-        isProjectOrderEditingDisabled,
-        isConflict,
-        error,
-        isAuthLoading,
-        user,
-        isAllowed,
-        signOut,
-        loadPhotographs,
-        saveChanges,
-        resetChanges,
-        uploadProjectAssets,
-        manageProjectAssets,
+        loadState: isLoading
+            ? { kind: 'loading' }
+            : error
+              ? { kind: 'error', message: error, onRetry: loadPhotographs }
+              : { kind: 'ready' },
+        sectionNavigation: {
+            sections: orderedSections,
+            selectedSectionId,
+            hasOrderChanges: hasSectionOrderChanges,
+            canReorder: !isSectionOrderEditingDisabled,
+            onSelectSection: selectSection,
+            onReorderSections: reorderSections,
+        },
+        projectNavigation: {
+            selectedSectionId,
+            sectionTitle: savedSection?.title ?? null,
+            projects: orderedProjects,
+            selectedProjectId,
+            hasOrderChanges: hasProjectOrderChanges,
+            canReorder: !isProjectOrderEditingDisabled,
+            onSelectProject: selectProject,
+            onReorderProjects: reorderProjects,
+        },
+        projectEditor: {
+            projectDraft,
+            canEdit: capabilities.canEditProject,
+            onChangeProjectDraft: updateProjectDraft,
+        },
+        changeActions: {
+            hasProjectChanges,
+            hasProjectOrderChanges,
+            hasSectionOrderChanges,
+            changeMode,
+            isSaving,
+            canSave: capabilities.canSaveChanges,
+            canReset: capabilities.canResetChanges,
+            onSaveChanges: saveChanges,
+            onResetChanges: resetChanges,
+        },
+        navigationGuard: {
+            isBlocked: isNavigationBlocked,
+            onNavigationBlocked: notifyNavigationBlocked,
+        },
+        workspaceStatus: {
+            isConflict,
+            onReloadPhotographs: loadPhotographs,
+        },
+        sectionCommands: {
+            selectedSection: savedSection,
+            isCreating: isCreatingSection,
+            isManaging: isManagingSection,
+            onCreateSection: createSection,
+            onRenameSection: renameSection,
+            onDeleteSection: deleteSection,
+        },
+        projectCommands: {
+            selectedProject: savedProject,
+            sectionTitle: savedSection?.title ?? 'Photographs',
+            isCreating: isCreatingProject,
+            isManaging: isManagingProject,
+            creationProgress: projectCreateProgress,
+            onCreateProject: createProject,
+            onDeleteProject: deleteProject,
+        },
+        assetCommands: {
+            selectedSectionId,
+            selectedProject: savedProject,
+            hasUnsavedChanges: hasChanges,
+            isUploading: isUploadingAsset,
+            isManaging: isManagingAssets,
+            uploadProgress: assetUploadProgress,
+            onUploadProjectAssets: uploadProjectAssets,
+            onManageProjectAssets: manageProjectAssets,
+        },
     }
 }
 

@@ -1,66 +1,26 @@
 'use client'
 
+import { useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ExternalLink, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useAuth, type AdminAuthUser } from '@/hooks/use-auth'
 import { AdminManagementLayout } from '../components/admin-management-layout'
 import { PhotographsManagementShell } from './components/photographs-management-shell'
 import { usePhotographsManagement } from './hooks/use-photographs-management'
 
 export default function PhotographManagementPage() {
-    const {
-        sections,
-        selectedSectionId,
-        sectionTitle,
-        projects,
-        selectedProjectId,
-        projectDraft,
-        updateProjectDraft,
-        hasChanges,
-        hasProjectChanges,
-        hasProjectOrderChanges,
-        hasSectionOrderChanges,
-        changeMode,
-        isDraftValid,
-        isLoading,
-        isSaving,
-        isUploadingAsset,
-        isCreatingProject,
-        isCreatingSection,
-        isManagingProject,
-        isManagingSection,
-        isManagingAssets,
-        assetUploadProgress,
-        projectCreateProgress,
-        isNavigationBlocked,
-        isSectionOrderEditingDisabled,
-        isProjectOrderEditingDisabled,
-        isConflict,
-        error,
-        isAuthLoading,
-        user,
-        isAllowed,
-        signOut,
-        loadPhotographs,
-        saveChanges,
-        resetChanges,
-        selectSection,
-        selectProject,
-        reorderSections,
-        reorderProjects,
-        notifyNavigationBlocked,
-        createSection,
-        renameSection,
-        deleteSection,
-        createProject,
-        deleteProject,
-        uploadProjectAssets,
-        manageProjectAssets,
-    } = usePhotographsManagement()
+    const router = useRouter()
+    const { user, isLoading: isAuthLoading, isAllowed, signOut } = useAuth()
+
+    useEffect(() => {
+        if (!isAuthLoading && (!user || !isAllowed)) router.replace('/admin')
+    }, [isAuthLoading, user, isAllowed, router])
 
     const headerAction = <PhotographManagementHeaderActions onSignOut={signOut} />
 
-    if (isAuthLoading || !user || !isAllowed || isLoading) {
+    if (isAuthLoading || !user || !isAllowed) {
         return (
             <AdminManagementLayout headerAction={user && isAllowed ? headerAction : undefined}>
                 <PhotographManagementLoading />
@@ -68,60 +28,49 @@ export default function PhotographManagementPage() {
         )
     }
 
-    if (error) {
-        return (
-            <AdminManagementLayout headerAction={headerAction}>
-                <PhotographManagementError message={error} onRetry={loadPhotographs} />
-            </AdminManagementLayout>
-        )
+    return (
+        <AdminManagementLayout headerAction={headerAction}>
+            <PhotographManagementWorkspace getIdToken={() => user.getIdToken()} />
+        </AdminManagementLayout>
+    )
+}
+
+function PhotographManagementWorkspace({
+    getIdToken,
+}: {
+    getIdToken: AdminAuthUser['getIdToken']
+}) {
+    const {
+        loadState,
+        sectionNavigation,
+        projectNavigation,
+        projectEditor,
+        changeActions,
+        navigationGuard,
+        workspaceStatus,
+        sectionCommands,
+        projectCommands,
+        assetCommands,
+    } = usePhotographsManagement(getIdToken)
+
+    if (loadState.kind === 'loading') return <PhotographManagementLoading />
+
+    if (loadState.kind === 'error') {
+        return <PhotographManagementError message={loadState.message} onRetry={loadState.onRetry} />
     }
 
     return (
-        <AdminManagementLayout headerAction={headerAction}>
-            <PhotographsManagementShell
-                sections={sections}
-                selectedSectionId={selectedSectionId}
-                sectionTitle={sectionTitle}
-                projects={projects}
-                selectedProjectId={selectedProjectId}
-                projectDraft={projectDraft}
-                onChangeProjectDraft={updateProjectDraft}
-                hasChanges={hasChanges}
-                hasProjectChanges={hasProjectChanges}
-                hasProjectOrderChanges={hasProjectOrderChanges}
-                hasSectionOrderChanges={hasSectionOrderChanges}
-                changeMode={changeMode}
-                isDraftValid={isDraftValid}
-                isSaving={isSaving}
-                isUploadingAsset={isUploadingAsset}
-                isCreatingProject={isCreatingProject}
-                isCreatingSection={isCreatingSection}
-                isManagingProject={isManagingProject}
-                isManagingSection={isManagingSection}
-                isManagingAssets={isManagingAssets}
-                assetUploadProgress={assetUploadProgress}
-                projectCreateProgress={projectCreateProgress}
-                isNavigationBlocked={isNavigationBlocked}
-                isSectionOrderEditingDisabled={isSectionOrderEditingDisabled}
-                isProjectOrderEditingDisabled={isProjectOrderEditingDisabled}
-                isConflict={isConflict}
-                onSaveChanges={saveChanges}
-                onResetChanges={resetChanges}
-                onReloadPhotographs={loadPhotographs}
-                onSelectSection={selectSection}
-                onSelectProject={selectProject}
-                onReorderSections={reorderSections}
-                onReorderProjects={reorderProjects}
-                onNavigationBlocked={notifyNavigationBlocked}
-                onCreateSection={createSection}
-                onRenameSection={renameSection}
-                onDeleteSection={deleteSection}
-                onCreateProject={createProject}
-                onDeleteProject={deleteProject}
-                onUploadProjectAssets={uploadProjectAssets}
-                onManageProjectAssets={manageProjectAssets}
-            />
-        </AdminManagementLayout>
+        <PhotographsManagementShell
+            sectionNavigation={sectionNavigation}
+            projectNavigation={projectNavigation}
+            projectEditor={projectEditor}
+            changeActions={changeActions}
+            navigationGuard={navigationGuard}
+            workspaceStatus={workspaceStatus}
+            sectionCommands={sectionCommands}
+            projectCommands={projectCommands}
+            assetCommands={assetCommands}
+        />
     )
 }
 

@@ -2,13 +2,6 @@ import type {
     PhotographProjectMetadata,
     PhotographSectionMetadata,
 } from '@/lib/apis/photographs/types'
-import type { PhotographManagementChangeMode } from '../types'
-
-interface PhotographManagementDirtyState {
-    hasProjectChanges: boolean
-    hasProjectOrderChanges: boolean
-    hasSectionOrderChanges: boolean
-}
 
 export function mapProjectsToDraftOrder(
     projects: PhotographProjectMetadata[],
@@ -37,26 +30,6 @@ export function movePhotographOrderId(ids: string[], activeId: string, overId: s
 
 export function hasPhotographOrderChanges(savedIds: string[], draftIds: string[]): boolean {
     return !arraysEqual(savedIds, draftIds)
-}
-
-export function getPhotographManagementChangeState({
-    hasProjectChanges,
-    hasProjectOrderChanges,
-    hasSectionOrderChanges,
-}: PhotographManagementDirtyState): {
-    changeMode: PhotographManagementChangeMode
-    hasInvalidConcurrentChanges: boolean
-} {
-    const activeModes = [
-        hasProjectChanges ? 'project' : null,
-        hasProjectOrderChanges ? 'project-order' : null,
-        hasSectionOrderChanges ? 'section-order' : null,
-    ].filter((mode): mode is Exclude<PhotographManagementChangeMode, null> => mode !== null)
-
-    return {
-        changeMode: activeModes.length === 1 ? activeModes[0] : null,
-        hasInvalidConcurrentChanges: activeModes.length > 1,
-    }
 }
 
 function mapItemsToDraftOrder<T extends { id: string }>(items: T[], draftIds: string[]): T[] {

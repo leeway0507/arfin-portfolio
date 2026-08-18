@@ -38,17 +38,22 @@ import { Button } from '@/components/ui/button'
 import { buildR2ImageUrl } from '@/lib/apis/image-url'
 import type {
     PhotographAssetTarget,
-    PhotographAssetManagementUpdate,
-    PhotographAssetUploadItem,
     PhotographImageMetadata,
-    PhotographProjectCreation,
     PhotographProjectMetadata,
-    PhotographSectionCreation,
-    PhotographSectionMetadata,
     PhotographTextPosition,
 } from '@/lib/apis/photographs/types'
 import { cn } from '@/lib/utils'
-import type { PhotographManagementChangeMode } from '../types'
+import type {
+    PhotographAssetCommandsModel,
+    PhotographChangeActionsModel,
+    PhotographNavigationGuardModel,
+    PhotographProjectCommandsModel,
+    PhotographProjectEditorModel,
+    PhotographProjectNavigationModel,
+    PhotographSectionCommandsModel,
+    PhotographSectionNavigationModel,
+    PhotographWorkspaceStatusModel,
+} from '../types'
 import { PhotographAssetDialog } from './photograph-asset-dialog'
 import { PhotographAssetManageDialog } from './photograph-asset-manage-dialog'
 import { PhotographProjectCreateDialog } from './photograph-project-create-dialog'
@@ -59,68 +64,39 @@ import { PhotographSectionManageDialog } from './photograph-section-manage-dialo
 import { PhotographSectionTabs } from './photograph-section-tabs'
 
 interface PhotographsManagementShellProps {
-    sections: PhotographSectionMetadata[]
-    selectedSectionId: string | null
-    sectionTitle: string | null
-    projects: PhotographProjectMetadata[]
-    selectedProjectId: string | null
-    projectDraft: PhotographProjectMetadata | null
-    onChangeProjectDraft: (
-        updateProject: (project: PhotographProjectMetadata) => PhotographProjectMetadata,
-    ) => void
-    hasChanges: boolean
-    hasProjectChanges: boolean
-    hasProjectOrderChanges: boolean
-    hasSectionOrderChanges: boolean
-    changeMode: PhotographManagementChangeMode
-    isDraftValid: boolean
-    isSaving: boolean
-    isUploadingAsset: boolean
-    isCreatingProject: boolean
-    isCreatingSection: boolean
-    isManagingProject: boolean
-    isManagingSection: boolean
-    isManagingAssets: boolean
-    assetUploadProgress: string | null
-    projectCreateProgress: string | null
-    isNavigationBlocked: boolean
-    isSectionOrderEditingDisabled: boolean
-    isProjectOrderEditingDisabled: boolean
-    isConflict: boolean
-    onSaveChanges: () => void
-    onResetChanges: () => void
-    onReloadPhotographs: () => void
-    onSelectSection: (sectionId: string) => void
-    onSelectProject: (projectId: string) => void
-    onReorderSections: (activeSectionId: string, overSectionId: string) => void
-    onReorderProjects: (activeProjectId: string, overProjectId: string) => void
-    onNavigationBlocked: () => void
-    onCreateSection: (creation: PhotographSectionCreation) => Promise<boolean>
-    onRenameSection: (sectionId: string, title: string) => Promise<boolean>
-    onDeleteSection: (sectionId: string) => Promise<boolean>
-    onCreateProject: (creation: Omit<PhotographProjectCreation, 'sectionId'>) => Promise<boolean>
-    onDeleteProject: (projectId: string) => Promise<boolean>
-    onUploadProjectAssets: (
-        target: PhotographAssetTarget,
-        assets: PhotographAssetUploadItem[],
-    ) => Promise<boolean>
-    onManageProjectAssets: (update: PhotographAssetManagementUpdate) => Promise<boolean>
+    sectionNavigation: PhotographSectionNavigationModel
+    projectNavigation: PhotographProjectNavigationModel
+    projectEditor: PhotographProjectEditorModel
+    changeActions: PhotographChangeActionsModel
+    navigationGuard: PhotographNavigationGuardModel
+    workspaceStatus: PhotographWorkspaceStatusModel
+    sectionCommands: PhotographSectionCommandsModel
+    projectCommands: PhotographProjectCommandsModel
+    assetCommands: PhotographAssetCommandsModel
 }
 
 type PreviewMode = 'pc' | 'mobile'
+type PhotographManagementDialog =
+    | { kind: 'closed' }
+    | { kind: 'asset-upload'; target: PhotographAssetTarget }
+    | { kind: 'asset-management' }
+    | { kind: 'project-create' }
+    | { kind: 'project-management' }
+    | { kind: 'section-create' }
+    | { kind: 'section-management' }
 
 interface PhotographProjectWysiwygEditorProps {
     projectDraft: PhotographProjectMetadata
     previewMode: PreviewMode
     isEditingDisabled: boolean
-    onChangeProjectDraft: PhotographsManagementShellProps['onChangeProjectDraft']
+    onChangeProjectDraft: PhotographProjectEditorModel['onChangeProjectDraft']
     onOpenAssetDialog: (mode: PhotographAssetTarget) => void
 }
 
 interface PhotographProjectCopyEditorProps {
     projectDraft: PhotographProjectMetadata
     isEditingDisabled: boolean
-    onChangeProjectDraft: PhotographsManagementShellProps['onChangeProjectDraft']
+    onChangeProjectDraft: PhotographProjectEditorModel['onChangeProjectDraft']
 }
 
 interface PhotographProjectHeroEditorProps {
@@ -151,252 +127,65 @@ interface SortableGalleryImageProps {
     onRemoveGalleryImage: (imageId: string) => void
 }
 
-interface PhotographsManagementActionsProps {
-    hasProjectChanges: boolean
-    hasProjectOrderChanges: boolean
-    hasSectionOrderChanges: boolean
-    changeMode: PhotographManagementChangeMode
-    isDraftValid: boolean
-    isSaving: boolean
-    isUploadingAsset: boolean
-    isCreatingProject: boolean
-    isCreatingSection: boolean
-    isManagingProject: boolean
-    isManagingSection: boolean
-    isManagingAssets: boolean
-    isConflict: boolean
-    onSaveChanges: () => void
-    onResetChanges: () => void
-}
-
 export function PhotographsManagementShell({
-    sections,
-    selectedSectionId,
-    sectionTitle,
-    projects,
-    selectedProjectId,
-    projectDraft,
-    onChangeProjectDraft,
-    hasChanges,
-    hasProjectChanges,
-    hasProjectOrderChanges,
-    hasSectionOrderChanges,
-    changeMode,
-    isDraftValid,
-    isSaving,
-    isUploadingAsset,
-    isCreatingProject,
-    isCreatingSection,
-    isManagingProject,
-    isManagingSection,
-    isManagingAssets,
-    assetUploadProgress,
-    projectCreateProgress,
-    isNavigationBlocked,
-    isSectionOrderEditingDisabled,
-    isProjectOrderEditingDisabled,
-    isConflict,
-    onSaveChanges,
-    onResetChanges,
-    onReloadPhotographs,
-    onSelectSection,
-    onSelectProject,
-    onReorderSections,
-    onReorderProjects,
-    onNavigationBlocked,
-    onCreateSection,
-    onRenameSection,
-    onDeleteSection,
-    onCreateProject,
-    onDeleteProject,
-    onUploadProjectAssets,
-    onManageProjectAssets,
+    sectionNavigation,
+    projectNavigation,
+    projectEditor,
+    changeActions,
+    navigationGuard,
+    workspaceStatus,
+    sectionCommands,
+    projectCommands,
+    assetCommands,
 }: PhotographsManagementShellProps) {
-    const [previewMode, setPreviewMode] = useState<PreviewMode>('pc')
-    const [assetDialogMode, setAssetDialogMode] = useState<PhotographAssetTarget | null>(null)
-    const [isProjectCreateDialogOpen, setIsProjectCreateDialogOpen] = useState(false)
-    const [isProjectManageDialogOpen, setIsProjectManageDialogOpen] = useState(false)
-    const [isAssetManageDialogOpen, setIsAssetManageDialogOpen] = useState(false)
-    const [isSectionCreateDialogOpen, setIsSectionCreateDialogOpen] = useState(false)
-    const [isSectionManageDialogOpen, setIsSectionManageDialogOpen] = useState(false)
-    const selectedSection = useMemo(
-        () => sections.find((section) => section.id === selectedSectionId) ?? null,
-        [sections, selectedSectionId],
-    )
-    const selectedProject = useMemo(
-        () => projects.find((project) => project.id === selectedProjectId) ?? null,
-        [projects, selectedProjectId],
-    )
-    const handleRequestProjectCreate = () => {
-        if (isNavigationBlocked) {
-            onNavigationBlocked()
-            return
-        }
-        setIsProjectCreateDialogOpen(true)
-    }
-    const handleRequestAssetManagement = () => {
-        if (isNavigationBlocked) {
-            onNavigationBlocked()
-            return
-        }
-        setIsAssetManageDialogOpen(true)
-    }
-    const isEditingDisabled =
-        hasProjectOrderChanges ||
-        hasSectionOrderChanges ||
-        isSaving ||
-        isUploadingAsset ||
-        isCreatingProject ||
-        isCreatingSection ||
-        isManagingProject ||
-        isManagingSection ||
-        isManagingAssets ||
-        isConflict
+    const [dialog, setDialog] = useState<PhotographManagementDialog>({ kind: 'closed' })
+
+    const closeDialog = () => setDialog({ kind: 'closed' })
+    const openSectionCreateDialog = () => setDialog({ kind: 'section-create' })
+    const openSectionManagementDialog = () => setDialog({ kind: 'section-management' })
+    const openProjectCreateDialog = () => setDialog({ kind: 'project-create' })
+    const openProjectManagementDialog = () => setDialog({ kind: 'project-management' })
+    const openAssetManagementDialog = () => setDialog({ kind: 'asset-management' })
+    const openAssetUploadDialog = (target: PhotographAssetTarget) =>
+        setDialog({ kind: 'asset-upload', target })
 
     return (
         <div className="overflow-hidden rounded-xl border bg-muted/30 shadow-sm">
             <PhotographSectionTabs
-                sections={sections}
-                selectedSectionId={selectedSectionId}
-                isNavigationBlocked={isNavigationBlocked}
-                isOrderEditingDisabled={isSectionOrderEditingDisabled}
-                hasOrderChanges={hasSectionOrderChanges}
-                onSelectSection={onSelectSection}
-                onReorderSections={onReorderSections}
-                onRequestCreateSection={() => setIsSectionCreateDialogOpen(true)}
-                onRequestManageSection={() => setIsSectionManageDialogOpen(true)}
-                onNavigationBlocked={onNavigationBlocked}
+                sections={sectionNavigation.sections}
+                selectedSectionId={sectionNavigation.selectedSectionId}
+                isNavigationBlocked={navigationGuard.isBlocked}
+                isOrderEditingDisabled={!sectionNavigation.canReorder}
+                hasOrderChanges={sectionNavigation.hasOrderChanges}
+                onSelectSection={sectionNavigation.onSelectSection}
+                onReorderSections={sectionNavigation.onReorderSections}
+                onRequestCreateSection={openSectionCreateDialog}
+                onRequestManageSection={openSectionManagementDialog}
+                onNavigationBlocked={navigationGuard.onNavigationBlocked}
             />
-            {isConflict ? (
-                <PhotographsConflictNotice onReloadPhotographs={onReloadPhotographs} />
+            {workspaceStatus.isConflict ? (
+                <PhotographsConflictNotice
+                    onReloadPhotographs={workspaceStatus.onReloadPhotographs}
+                />
             ) : null}
-            <section
-                id="photograph-section-panel"
-                role="tabpanel"
-                aria-labelledby={
-                    selectedSectionId ? `photograph-section-tab-${selectedSectionId}` : undefined
-                }
-            >
-                {selectedSectionId && sectionTitle ? (
-                    <>
-                        <PhotographProjectTabs
-                            sectionTitle={sectionTitle}
-                            projects={projects}
-                            selectedProjectId={selectedProjectId}
-                            isNavigationBlocked={isNavigationBlocked}
-                            isOrderEditingDisabled={isProjectOrderEditingDisabled}
-                            hasOrderChanges={hasProjectOrderChanges}
-                            onSelectProject={onSelectProject}
-                            onReorderProjects={onReorderProjects}
-                            onRequestCreateProject={handleRequestProjectCreate}
-                            onRequestManageProject={() => setIsProjectManageDialogOpen(true)}
-                            onNavigationBlocked={onNavigationBlocked}
-                        />
-                        {projectDraft && selectedProjectId ? (
-                            <PhotographsManagementToolbar
-                                previewMode={previewMode}
-                                isImageManagementDisabled={isNavigationBlocked}
-                                onChangePreviewMode={setPreviewMode}
-                                onOpenImageManagement={handleRequestAssetManagement}
-                            />
-                        ) : null}
-                        <PhotographsManagementActions
-                            hasProjectChanges={hasProjectChanges}
-                            hasProjectOrderChanges={hasProjectOrderChanges}
-                            hasSectionOrderChanges={hasSectionOrderChanges}
-                            changeMode={changeMode}
-                            isDraftValid={isDraftValid}
-                            isSaving={isSaving}
-                            isUploadingAsset={isUploadingAsset}
-                            isCreatingProject={isCreatingProject}
-                            isCreatingSection={isCreatingSection}
-                            isManagingProject={isManagingProject}
-                            isManagingSection={isManagingSection}
-                            isManagingAssets={isManagingAssets}
-                            isConflict={isConflict}
-                            onSaveChanges={onSaveChanges}
-                            onResetChanges={onResetChanges}
-                        />
-                        {projectDraft && selectedProjectId ? (
-                            <div
-                                id="photograph-project-panel"
-                                role="tabpanel"
-                                aria-labelledby={`photograph-project-tab-${selectedProjectId}`}
-                            >
-                                <PhotographProjectWysiwygEditor
-                                    projectDraft={projectDraft}
-                                    previewMode={previewMode}
-                                    isEditingDisabled={isEditingDisabled}
-                                    onChangeProjectDraft={onChangeProjectDraft}
-                                    onOpenAssetDialog={setAssetDialogMode}
-                                />
-                            </div>
-                        ) : (
-                            <PhotographSectionEmptyState
-                                sectionTitle={sectionTitle}
-                                onCreateFirstProject={handleRequestProjectCreate}
-                            />
-                        )}
-                    </>
-                ) : (
-                    <PhotographsEmptyState
-                        onCreateFirstSection={() => setIsSectionCreateDialogOpen(true)}
-                    />
-                )}
-            </section>
-            <PhotographAssetDialog
-                mode={assetDialogMode}
-                hasUnsavedChanges={hasChanges}
-                isUploadingAsset={isUploadingAsset}
-                assetUploadProgress={assetUploadProgress}
-                isConflict={isConflict}
-                onClose={() => setAssetDialogMode(null)}
-                onUploadImages={onUploadProjectAssets}
+            <PhotographsManagementProjectPanel
+                projectNavigation={projectNavigation}
+                projectEditor={projectEditor}
+                changeActions={changeActions}
+                navigationGuard={navigationGuard}
+                onCreateFirstSection={openSectionCreateDialog}
+                onRequestProjectCreate={openProjectCreateDialog}
+                onRequestProjectManagement={openProjectManagementDialog}
+                onRequestAssetManagement={openAssetManagementDialog}
+                onRequestAssetUpload={openAssetUploadDialog}
             />
-            <PhotographAssetManageDialog
-                sectionId={selectedSectionId}
-                project={selectedProject}
-                isOpen={isAssetManageDialogOpen}
-                isManagingAssets={isManagingAssets}
-                isConflict={isConflict}
-                onClose={() => setIsAssetManageDialogOpen(false)}
-                onManageAssets={onManageProjectAssets}
-                onReloadPhotographs={onReloadPhotographs}
-            />
-            <PhotographProjectManageDialog
-                project={selectedProject}
-                isOpen={isProjectManageDialogOpen}
-                isManagingProject={isManagingProject}
-                isConflict={isConflict}
-                onClose={() => setIsProjectManageDialogOpen(false)}
-                onDeleteProject={onDeleteProject}
-                onReloadPhotographs={onReloadPhotographs}
-            />
-            <PhotographSectionManageDialog
-                section={selectedSection}
-                isOpen={isSectionManageDialogOpen}
-                isManagingSection={isManagingSection}
-                isConflict={isConflict}
-                onClose={() => setIsSectionManageDialogOpen(false)}
-                onRenameSection={onRenameSection}
-                onDeleteSection={onDeleteSection}
-                onReloadPhotographs={onReloadPhotographs}
-            />
-            <PhotographProjectCreateDialog
-                isOpen={isProjectCreateDialogOpen}
-                sectionTitle={sectionTitle ?? 'Photographs'}
-                isCreatingProject={isCreatingProject}
-                isConflict={isConflict}
-                projectCreateProgress={projectCreateProgress}
-                onClose={() => setIsProjectCreateDialogOpen(false)}
-                onCreateProject={onCreateProject}
-            />
-            <PhotographSectionCreateDialog
-                isOpen={isSectionCreateDialogOpen}
-                isCreatingSection={isCreatingSection}
-                isConflict={isConflict}
-                onClose={() => setIsSectionCreateDialogOpen(false)}
-                onCreateSection={onCreateSection}
+            <PhotographsManagementDialogs
+                dialog={dialog}
+                workspaceStatus={workspaceStatus}
+                sectionCommands={sectionCommands}
+                projectCommands={projectCommands}
+                assetCommands={assetCommands}
+                onClose={closeDialog}
             />
         </div>
     )
@@ -415,6 +204,183 @@ function PhotographsConflictNotice({ onReloadPhotographs }: { onReloadPhotograph
                 다시 불러오기
             </Button>
         </div>
+    )
+}
+
+function PhotographsManagementProjectPanel({
+    projectNavigation,
+    projectEditor,
+    changeActions,
+    navigationGuard,
+    onCreateFirstSection,
+    onRequestProjectCreate,
+    onRequestProjectManagement,
+    onRequestAssetManagement,
+    onRequestAssetUpload,
+}: {
+    projectNavigation: PhotographProjectNavigationModel
+    projectEditor: PhotographProjectEditorModel
+    changeActions: PhotographChangeActionsModel
+    navigationGuard: PhotographNavigationGuardModel
+    onCreateFirstSection: () => void
+    onRequestProjectCreate: () => void
+    onRequestProjectManagement: () => void
+    onRequestAssetManagement: () => void
+    onRequestAssetUpload: (target: PhotographAssetTarget) => void
+}) {
+    const [previewMode, setPreviewMode] = useState<PreviewMode>('pc')
+
+    const handleRequestProjectCreate = () => {
+        if (navigationGuard.isBlocked) {
+            navigationGuard.onNavigationBlocked()
+            return
+        }
+        onRequestProjectCreate()
+    }
+    const handleRequestAssetManagement = () => {
+        if (navigationGuard.isBlocked) {
+            navigationGuard.onNavigationBlocked()
+            return
+        }
+        onRequestAssetManagement()
+    }
+
+    return (
+        <section
+            id="photograph-section-panel"
+            role="tabpanel"
+            aria-labelledby={
+                projectNavigation.selectedSectionId
+                    ? `photograph-section-tab-${projectNavigation.selectedSectionId}`
+                    : undefined
+            }
+        >
+            {projectNavigation.sectionTitle ? (
+                <>
+                    <PhotographProjectTabs
+                        sectionTitle={projectNavigation.sectionTitle}
+                        projects={projectNavigation.projects}
+                        selectedProjectId={projectNavigation.selectedProjectId}
+                        isNavigationBlocked={navigationGuard.isBlocked}
+                        isOrderEditingDisabled={!projectNavigation.canReorder}
+                        hasOrderChanges={projectNavigation.hasOrderChanges}
+                        onSelectProject={projectNavigation.onSelectProject}
+                        onReorderProjects={projectNavigation.onReorderProjects}
+                        onRequestCreateProject={handleRequestProjectCreate}
+                        onRequestManageProject={onRequestProjectManagement}
+                        onNavigationBlocked={navigationGuard.onNavigationBlocked}
+                    />
+                    {projectEditor.projectDraft && projectNavigation.selectedProjectId ? (
+                        <PhotographsManagementToolbar
+                            previewMode={previewMode}
+                            isImageManagementDisabled={navigationGuard.isBlocked}
+                            onChangePreviewMode={setPreviewMode}
+                            onOpenImageManagement={handleRequestAssetManagement}
+                        />
+                    ) : null}
+                    <PhotographsManagementActions actions={changeActions} />
+                    {projectEditor.projectDraft && projectNavigation.selectedProjectId ? (
+                        <div
+                            id="photograph-project-panel"
+                            role="tabpanel"
+                            aria-labelledby={`photograph-project-tab-${projectNavigation.selectedProjectId}`}
+                        >
+                            <PhotographProjectWysiwygEditor
+                                projectDraft={projectEditor.projectDraft}
+                                previewMode={previewMode}
+                                isEditingDisabled={!projectEditor.canEdit}
+                                onChangeProjectDraft={projectEditor.onChangeProjectDraft}
+                                onOpenAssetDialog={onRequestAssetUpload}
+                            />
+                        </div>
+                    ) : (
+                        <PhotographSectionEmptyState
+                            sectionTitle={projectNavigation.sectionTitle}
+                            onCreateFirstProject={handleRequestProjectCreate}
+                        />
+                    )}
+                </>
+            ) : (
+                <PhotographsEmptyState onCreateFirstSection={onCreateFirstSection} />
+            )}
+        </section>
+    )
+}
+
+function PhotographsManagementDialogs({
+    dialog,
+    workspaceStatus,
+    sectionCommands,
+    projectCommands,
+    assetCommands,
+    onClose,
+}: {
+    dialog: PhotographManagementDialog
+    workspaceStatus: PhotographWorkspaceStatusModel
+    sectionCommands: PhotographSectionCommandsModel
+    projectCommands: PhotographProjectCommandsModel
+    assetCommands: PhotographAssetCommandsModel
+    onClose: () => void
+}) {
+    const assetUploadTarget = dialog.kind === 'asset-upload' ? dialog.target : null
+
+    return (
+        <>
+            <PhotographAssetDialog
+                mode={assetUploadTarget}
+                hasUnsavedChanges={assetCommands.hasUnsavedChanges}
+                isUploadingAsset={assetCommands.isUploading}
+                assetUploadProgress={assetCommands.uploadProgress}
+                isConflict={workspaceStatus.isConflict}
+                onClose={onClose}
+                onUploadImages={assetCommands.onUploadProjectAssets}
+            />
+            <PhotographAssetManageDialog
+                sectionId={assetCommands.selectedSectionId}
+                project={assetCommands.selectedProject}
+                isOpen={dialog.kind === 'asset-management'}
+                isManagingAssets={assetCommands.isManaging}
+                isConflict={workspaceStatus.isConflict}
+                onClose={onClose}
+                onManageAssets={assetCommands.onManageProjectAssets}
+                onReloadPhotographs={workspaceStatus.onReloadPhotographs}
+            />
+            <PhotographProjectManageDialog
+                project={projectCommands.selectedProject}
+                isOpen={dialog.kind === 'project-management'}
+                isManagingProject={projectCommands.isManaging}
+                isConflict={workspaceStatus.isConflict}
+                onClose={onClose}
+                onDeleteProject={projectCommands.onDeleteProject}
+                onReloadPhotographs={workspaceStatus.onReloadPhotographs}
+            />
+            <PhotographSectionManageDialog
+                section={sectionCommands.selectedSection}
+                isOpen={dialog.kind === 'section-management'}
+                isManagingSection={sectionCommands.isManaging}
+                isConflict={workspaceStatus.isConflict}
+                onClose={onClose}
+                onRenameSection={sectionCommands.onRenameSection}
+                onDeleteSection={sectionCommands.onDeleteSection}
+                onReloadPhotographs={workspaceStatus.onReloadPhotographs}
+            />
+            <PhotographProjectCreateDialog
+                isOpen={dialog.kind === 'project-create'}
+                sectionTitle={projectCommands.sectionTitle}
+                isCreatingProject={projectCommands.isCreating}
+                isConflict={workspaceStatus.isConflict}
+                projectCreateProgress={projectCommands.creationProgress}
+                onClose={onClose}
+                onCreateProject={projectCommands.onCreateProject}
+            />
+            <PhotographSectionCreateDialog
+                isOpen={dialog.kind === 'section-create'}
+                isCreatingSection={sectionCommands.isCreating}
+                isConflict={workspaceStatus.isConflict}
+                onClose={onClose}
+                onCreateSection={sectionCommands.onCreateSection}
+            />
+        </>
     )
 }
 
@@ -498,28 +464,15 @@ function PhotographPreviewModeControl({
     )
 }
 
-function PhotographsManagementActions({
-    hasProjectChanges,
-    hasProjectOrderChanges,
-    hasSectionOrderChanges,
-    changeMode,
-    isDraftValid,
-    isSaving,
-    isUploadingAsset,
-    isCreatingProject,
-    isCreatingSection,
-    isManagingProject,
-    isManagingSection,
-    isManagingAssets,
-    isConflict,
-    onSaveChanges,
-    onResetChanges,
-}: PhotographsManagementActionsProps) {
-    const hasChanges = hasProjectChanges || hasProjectOrderChanges || hasSectionOrderChanges
+function PhotographsManagementActions({ actions }: { actions: PhotographChangeActionsModel }) {
+    const hasChanges =
+        actions.hasProjectChanges ||
+        actions.hasProjectOrderChanges ||
+        actions.hasSectionOrderChanges
     const actionCopy = getPhotographsManagementActionCopy(
-        changeMode,
-        isSaving,
-        hasChanges && !changeMode,
+        actions.changeMode,
+        actions.isSaving,
+        hasChanges && !actions.changeMode,
     )
 
     return (
@@ -529,36 +482,12 @@ function PhotographsManagementActions({
                 <Button
                     type="button"
                     variant="outline"
-                    disabled={
-                        !hasChanges ||
-                        isSaving ||
-                        isUploadingAsset ||
-                        isCreatingProject ||
-                        isCreatingSection ||
-                        isManagingProject ||
-                        isManagingSection ||
-                        isManagingAssets
-                    }
-                    onClick={onResetChanges}
+                    disabled={!actions.canReset}
+                    onClick={actions.onResetChanges}
                 >
                     <RotateCcw aria-hidden="true" /> {actionCopy.resetLabel}
                 </Button>
-                <Button
-                    type="button"
-                    disabled={
-                        !changeMode ||
-                        (changeMode === 'project' && !isDraftValid) ||
-                        isSaving ||
-                        isUploadingAsset ||
-                        isCreatingProject ||
-                        isCreatingSection ||
-                        isManagingProject ||
-                        isManagingSection ||
-                        isManagingAssets ||
-                        isConflict
-                    }
-                    onClick={onSaveChanges}
-                >
+                <Button type="button" disabled={!actions.canSave} onClick={actions.onSaveChanges}>
                     <Save aria-hidden="true" /> {actionCopy.saveLabel}
                 </Button>
             </div>
@@ -600,7 +529,7 @@ function PhotographProjectWysiwygEditor({
         <div className="overflow-x-auto px-4 py-8 sm:px-8">
             <div
                 className={cn(
-                    "mx-auto overflow-hidden bg-white font-['Pretendard_Variable'] text-black shadow-[0_18px_60px_rgba(0,0,0,0.09)] transition-[width]",
+                    'mx-auto overflow-hidden bg-white font-sans text-black shadow-[0_18px_60px_rgba(0,0,0,0.09)] transition-[width]',
                     previewMode === 'pc' ? 'w-[1180px] max-w-none' : 'w-[390px] max-w-full',
                 )}
             >
@@ -1028,7 +957,7 @@ function getHorizontalSortableKeyboardCoordinates(
 }
 
 function getPhotographsManagementActionCopy(
-    changeMode: PhotographManagementChangeMode,
+    changeMode: PhotographChangeActionsModel['changeMode'],
     isSaving: boolean,
     hasInvalidConcurrentChanges: boolean,
 ) {

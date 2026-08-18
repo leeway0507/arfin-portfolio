@@ -1,6 +1,5 @@
 import type { PhotographSectionMetadata } from '@/lib/apis/photographs/types'
 import {
-    getPhotographManagementChangeState,
     hasPhotographOrderChanges,
     mapSectionsToDraftOrder,
     movePhotographOrderId,
@@ -37,39 +36,6 @@ describe('photograph order state', () => {
         ])
         expect(mapSectionsToDraftOrder(sections, ['first', 'missing'])).toBe(sections)
         expect(mapSectionsToDraftOrder(sections, ['first', 'first', 'third'])).toBe(sections)
-    })
-
-    it.each([
-        [true, false, false, 'project'],
-        [false, true, false, 'project-order'],
-        [false, false, true, 'section-order'],
-        [false, false, false, null],
-    ] as const)(
-        '단일 dirty 상태만 유효한 mode로 만든다',
-        (hasProjectChanges, hasProjectOrderChanges, hasSectionOrderChanges, expectedMode) => {
-            expect(
-                getPhotographManagementChangeState({
-                    hasProjectChanges,
-                    hasProjectOrderChanges,
-                    hasSectionOrderChanges,
-                }),
-            ).toEqual({ changeMode: expectedMode, hasInvalidConcurrentChanges: false })
-        },
-    )
-
-    it.each([
-        [true, true, false],
-        [true, false, true],
-        [false, true, true],
-        [true, true, true],
-    ])('복수 dirty 상태를 저장 가능한 mode로 숨기지 않는다', (...dirtyStates) => {
-        expect(
-            getPhotographManagementChangeState({
-                hasProjectChanges: dirtyStates[0],
-                hasProjectOrderChanges: dirtyStates[1],
-                hasSectionOrderChanges: dirtyStates[2],
-            }),
-        ).toEqual({ changeMode: null, hasInvalidConcurrentChanges: true })
     })
 })
 
