@@ -13,7 +13,7 @@ type AdminManagementLayoutProps = {
 
 const ADMIN_TABS = [
     { href: '/admin/home', label: '홈 관리' },
-    { href: '/admin/photos', label: '사진 관리' },
+    { href: '/admin/photographs', label: '사진관리' },
 ] as const
 
 export function AdminManagementLayout({
@@ -49,15 +49,9 @@ export function AdminManagementLayout({
                     </nav>
                 </div>
 
-                {centerContent && (
-                    <div className="flex-shrink-0">
-                        {centerContent}
-                    </div>
-                )}
+                {centerContent && <div className="flex-shrink-0">{centerContent}</div>}
 
-                <div className="flex-1 flex justify-end">
-                    {headerAction}
-                </div>
+                <div className="flex-1 flex justify-end">{headerAction}</div>
             </div>
             {children}
         </div>

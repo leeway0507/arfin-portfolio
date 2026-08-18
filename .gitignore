@@ -135,3 +135,7 @@ image-optimization/images
 
 .swc
 .wrangler
+
+# Local QA captures and deployment audit artifacts
+tmp/
+design-qa.md

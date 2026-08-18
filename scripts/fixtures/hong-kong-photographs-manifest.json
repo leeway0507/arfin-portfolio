@@ -1,0 +1,117 @@
+{
+    "version": 2,
+    "sections": [
+        {
+            "id": "editorial",
+            "title": "Editorial",
+            "projects": [
+                {
+                    "id": "lofficiel-hommes-hong-kong-layers-of-him",
+                    "publication": "L’Officiel Hommes Hong Kong",
+                    "title": "Layers of Him",
+                    "textPosition": "left",
+                    "heroImageId": "layers-of-him-01",
+                    "galleryImageIds": [
+                        "layers-of-him-02",
+                        "layers-of-him-03",
+                        "layers-of-him-04",
+                        "layers-of-him-05",
+                        "layers-of-him-06",
+                        "layers-of-him-07",
+                        "layers-of-him-08",
+                        "layers-of-him-09",
+                        "layers-of-him-10",
+                        "layers-of-him-11",
+                        "layers-of-him-12"
+                    ],
+                    "images": [
+                        {
+                            "id": "layers-of-him-01",
+                            "objectKey": "photographs/editorial/layers-of-him/L_01.webp",
+                            "alt": "Layers of Him editorial photograph 1",
+                            "width": 6868,
+                            "height": 4479
+                        },
+                        {
+                            "id": "layers-of-him-02",
+                            "objectKey": "photographs/editorial/layers-of-him/L_02.webp",
+                            "alt": "Layers of Him editorial photograph 2",
+                            "width": 4682,
+                            "height": 6689
+                        },
+                        {
+                            "id": "layers-of-him-03",
+                            "objectKey": "photographs/editorial/layers-of-him/L_03.webp",
+                            "alt": "Layers of Him editorial photograph 3",
+                            "width": 4838,
+                            "height": 6311
+                        },
+                        {
+                            "id": "layers-of-him-04",
+                            "objectKey": "photographs/editorial/layers-of-him/L_04.webp",
+                            "alt": "Layers of Him editorial photograph 4",
+                            "width": 4814,
+                            "height": 6279
+                        },
+                        {
+                            "id": "layers-of-him-05",
+                            "objectKey": "photographs/editorial/layers-of-him/L_05.webp",
+                            "alt": "Layers of Him editorial photograph 5",
+                            "width": 4727,
+                            "height": 6166
+                        },
+                        {
+                            "id": "layers-of-him-06",
+                            "objectKey": "photographs/editorial/layers-of-him/L_06.webp",
+                            "alt": "Layers of Him editorial photograph 6",
+                            "width": 4811,
+                            "height": 6275
+                        },
+                        {
+                            "id": "layers-of-him-07",
+                            "objectKey": "photographs/editorial/layers-of-him/L_07.webp",
+                            "alt": "Layers of Him editorial photograph 7",
+                            "width": 4574,
+                            "height": 6860
+                        },
+                        {
+                            "id": "layers-of-him-08",
+                            "objectKey": "photographs/editorial/layers-of-him/L_08.webp",
+                            "alt": "Layers of Him editorial photograph 8",
+                            "width": 4747,
+                            "height": 6192
+                        },
+                        {
+                            "id": "layers-of-him-09",
+                            "objectKey": "photographs/editorial/layers-of-him/L_09.webp",
+                            "alt": "Layers of Him editorial photograph 9",
+                            "width": 4807,
+                            "height": 6270
+                        },
+                        {
+                            "id": "layers-of-him-10",
+                            "objectKey": "photographs/editorial/layers-of-him/L_10.webp",
+                            "alt": "Layers of Him editorial photograph 10",
+                            "width": 4802,
+                            "height": 6860
+                        },
+                        {
+                            "id": "layers-of-him-11",
+                            "objectKey": "photographs/editorial/layers-of-him/L_11.webp",
+                            "alt": "Layers of Him editorial photograph 11",
+                            "width": 4837,
+                            "height": 6309
+                        },
+                        {
+                            "id": "layers-of-him-12",
+                            "objectKey": "photographs/editorial/layers-of-him/L_12.webp",
+                            "alt": "Layers of Him editorial photograph 12",
+                            "width": 7360,
+                            "height": 4912
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

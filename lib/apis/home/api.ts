@@ -1,9 +1,9 @@
 import type { HomeImage, HomeImageApiResponse } from './types'
 import type { HomeImageLayout } from './types'
 import { normalizeHomeImageLayout } from './layout'
+import { buildR2ImageUrl } from '../image-url'
 
 const DEFAULT_HOME_ALT = 'Arfin Yoon main image'
-const DEFAULT_IMAGE_BASE_URL = 'https://images.arfinyoon.com'
 
 function getApiBase(): string {
     const configuredBase = process.env.NEXT_PUBLIC_API_BASE?.trim()
@@ -17,25 +17,12 @@ function getApiBase(): string {
     return configuredBase || ''
 }
 
-function buildImageUrl(imageKey: string, updatedAt: string | null): string {
-    const baseUrl = (process.env.NEXT_PUBLIC_IMAGE_URL?.trim() || DEFAULT_IMAGE_BASE_URL).replace(
-        /\/$/,
-        '',
-    )
-    const path = imageKey
-        .split('/')
-        .map((part) => encodeURIComponent(part))
-        .join('/')
-    const version = updatedAt ? `?v=${encodeURIComponent(updatedAt)}` : ''
-    return `${baseUrl}/${path}${version}`
-}
-
 function toHomeImage(data: HomeImageApiResponse): HomeImage {
     const imageKey = data.imageKey ?? null
     const updatedAt = data.updatedAt ?? null
     return {
         imageKey,
-        imageUrl: imageKey ? buildImageUrl(imageKey, updatedAt) : null,
+        imageUrl: imageKey ? buildR2ImageUrl(imageKey, updatedAt) : null,
         alt: data.alt?.trim() || DEFAULT_HOME_ALT,
         updatedAt,
         layout: normalizeHomeImageLayout(data.layout),

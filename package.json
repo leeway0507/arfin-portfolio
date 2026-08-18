@@ -13,6 +13,8 @@
         "dev:api": "wrangler pages dev out --port 8788",
         "dev:admin": "concurrently -n next,pages \"pnpm dev\" \"wrangler pages dev out --proxy 3000 --port 8788 --live-reload\"",
         "dev:local": "pnpm dev:admin",
+        "r2:import:photographs": "node ./scripts/import-photographs-reference-local.mjs",
+        "r2:seed:hong-kong": "bash ./scripts/seed-hong-kong-local-r2.sh",
         "pages:deploy": "pnpm build && wrangler pages deploy out"
     },
     "dependencies": {
@@ -44,6 +46,7 @@
         "@types/node": "^20",
         "@types/react": "^19",
         "@types/react-dom": "^19",
+        "agentation": "^3.0.2",
         "concurrently": "^9.1.2",
         "eslint": "^9",
         "eslint-config-next": "15.5.15",
@@ -55,8 +58,7 @@
         "ts-node": "^10.9.2",
         "tsx": "^4.19.3",
         "typescript": "^5",
-        "wrangler": "^4",
-        "agentation": "^3.0.2"
+        "wrangler": "^4"
     },
     "pnpm": {
         "overrides": {

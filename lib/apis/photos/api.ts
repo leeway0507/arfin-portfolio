@@ -1,7 +1,7 @@
 import type { PhotoListItem } from './types'
+import { buildR2ImageUrl } from '../image-url'
 
 const IMAGE_EXT = /\.(webp|jpg|jpeg|png|gif)$/i
-const DEFAULT_IMAGE_BASE_URL = 'https://images.arfinyoon.com'
 
 /** 경로만 제거하여 원본 파일명 반환 (서버와 동일 로직) */
 function getOriginalFilename(name: string): string {
@@ -59,15 +59,6 @@ function getApiBase(): string {
     return configuredBase || ''
 }
 
-/** Admin용 이미지 URL. NEXT_PUBLIC_IMAGE_URL(CDN)에서 직접 로드 */
-function buildImageUrl(filename: string): string {
-    const baseUrl = (process.env.NEXT_PUBLIC_IMAGE_URL?.trim() || DEFAULT_IMAGE_BASE_URL).replace(
-        /\/$/,
-        '',
-    )
-    return `${baseUrl}/${encodeURIComponent(filename)}`
-}
-
 /** API 응답 (imageUrl은 프론트에서 NEXT_PUBLIC_IMAGE_URL 기반으로 구성) */
 interface PhotoListApiResponse {
     items: Array<{ filename: string; caption: string; order: number }>
@@ -102,7 +93,7 @@ export async function getPhotoList(
     const rawItems = data.items ?? []
     return rawItems.map((item) => ({
         ...item,
-        imageUrl: buildImageUrl(item.filename),
+        imageUrl: buildR2ImageUrl(item.filename),
     }))
 }
 
@@ -120,7 +111,7 @@ export async function getPublicPhotoList(): Promise<PhotoListItem[]> {
     const rawItems = data.items ?? []
     return rawItems.map((item) => ({
         ...item,
-        imageUrl: buildImageUrl(item.filename),
+        imageUrl: buildR2ImageUrl(item.filename),
     }))
 }
 
@@ -215,7 +206,7 @@ export function orderToPhotoListWithPreviews(
     previewUrls?: string[],
 ): PhotoListItem[] {
     return filenames.map((filename, index) => {
-        const imageUrl = previewUrls?.[index] ?? buildImageUrl(filename)
+        const imageUrl = previewUrls?.[index] ?? buildR2ImageUrl(filename)
         return {
             filename,
             caption: captionFromFilename(filename) || filename,
@@ -231,7 +222,7 @@ export function photoListItemFromFilename(filename: string, order: number): Phot
         filename,
         caption: captionFromFilename(filename) || filename,
         order,
-        imageUrl: buildImageUrl(filename),
+        imageUrl: buildR2ImageUrl(filename),
     }
 }
 

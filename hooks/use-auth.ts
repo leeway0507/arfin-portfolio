@@ -6,9 +6,14 @@ import {
     signInWithPopup,
     signOut as firebaseSignOut,
     onAuthStateChanged,
-    type User,
 } from 'firebase/auth'
 import { getFirebaseAuth } from '@/lib/auth/firebase'
+import {
+    getAdminLoginMode,
+    LOCAL_ADMIN_SESSION_KEY,
+    LOCAL_ADMIN_TOKEN,
+    type AdminLoginMode,
+} from '@/lib/auth/local-admin'
 
 /**
  * POST /api/auth/callback 응답 타입
@@ -64,13 +69,18 @@ async function verifyToken(idToken: string): Promise<AuthCallbackSuccess | null>
 }
 
 export interface UseAuthReturn {
-    user: User | null
+    user: AdminAuthUser | null
     isLoading: boolean
     isAllowed: boolean
     error: string | null
-    signInWithGoogle: () => Promise<void>
+    loginMode: AdminLoginMode
+    signIn: () => Promise<void>
     signOut: () => Promise<void>
     clearError: () => void
+}
+
+export interface AdminAuthUser {
+    getIdToken: () => Promise<string>
 }
 
 /**
@@ -81,17 +91,30 @@ export interface UseAuthReturn {
  * @see functions/docs/pages-functions-setup.md
  */
 export function useAuth(): UseAuthReturn {
-    const [user, setUser] = useState<User | null>(null)
+    const [user, setUser] = useState<AdminAuthUser | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [isAllowed, setIsAllowed] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [loginMode, setLoginMode] = useState<AdminLoginMode>('google')
 
     const clearError = useCallback(() => setError(null), [])
 
-    // Firebase Auth 상태 + 토큰 검증
+    // 로컬 직접 로그인과 운영 Google 로그인이 Firebase 상태를 공유하지 않도록 분리한다.
     useEffect(() => {
+        const currentLoginMode = getCurrentAdminLoginMode()
+        setLoginMode(currentLoginMode)
+
+        if (currentLoginMode === 'local') {
+            const hasLocalSession = isLocalAdminSessionActive()
+            setUser(hasLocalSession ? createLocalAdminUser() : null)
+            setIsAllowed(hasLocalSession)
+            setIsLoading(false)
+            return
+        }
+
         const auth = getFirebaseAuth()
         if (!auth) {
+            setError('Firebase가 설정되지 않았습니다.')
             setIsLoading(false)
             return
         }
@@ -120,7 +143,16 @@ export function useAuth(): UseAuthReturn {
         return () => unsub()
     }, [])
 
-    const signInWithGoogle = useCallback(async () => {
+    const signIn = useCallback(async () => {
+        if (loginMode === 'local') {
+            localStorage.setItem(LOCAL_ADMIN_SESSION_KEY, 'active')
+            setError(null)
+            setUser(createLocalAdminUser())
+            setIsAllowed(true)
+            setIsLoading(false)
+            return
+        }
+
         const auth = getFirebaseAuth()
         if (!auth) {
             setError('Firebase가 설정되지 않았습니다.')
@@ -140,25 +172,47 @@ export function useAuth(): UseAuthReturn {
         } finally {
             setIsLoading(false)
         }
-    }, [])
+    }, [loginMode])
 
     const signOut = useCallback(async () => {
-        const auth = getFirebaseAuth()
-        if (auth) {
-            await firebaseSignOut(auth)
+        if (loginMode === 'local') {
+            localStorage.removeItem(LOCAL_ADMIN_SESSION_KEY)
+            setUser(null)
+            setIsAllowed(false)
+            setError(null)
+            return
         }
+
+        const auth = getFirebaseAuth()
+        if (auth) await firebaseSignOut(auth)
         setUser(null)
         setIsAllowed(false)
         setError(null)
-    }, [])
+    }, [loginMode])
 
     return {
         user,
         isLoading,
         isAllowed,
         error,
-        signInWithGoogle,
+        loginMode,
+        signIn,
         signOut,
         clearError,
+    }
+}
+
+function getCurrentAdminLoginMode(): AdminLoginMode {
+    if (typeof window === 'undefined') return 'google'
+    return getAdminLoginMode(window.location.hostname)
+}
+
+function isLocalAdminSessionActive(): boolean {
+    return localStorage.getItem(LOCAL_ADMIN_SESSION_KEY) === 'active'
+}
+
+function createLocalAdminUser(): AdminAuthUser {
+    return {
+        getIdToken: () => Promise.resolve(LOCAL_ADMIN_TOKEN),
     }
 }

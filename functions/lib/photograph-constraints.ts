@@ -1,0 +1,1 @@
+export const MAX_PHOTOGRAPH_SECTIONS = 100

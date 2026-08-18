@@ -1,5 +1,5 @@
-import { PhotoCarouselLoader } from './photo-carousel-loader'
+import { PhotographsPageLoader } from './photographs-page-loader'
 
-export default function Project() {
-    return <PhotoCarouselLoader />
+export default function PhotographsPage() {
+    return <PhotographsPageLoader />
 }

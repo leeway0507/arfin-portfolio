@@ -1,8 +1,17 @@
 /**
- * GET    /api/photos - R2 order.json 조회 (인증 필요)
- * POST   /api/photos - 사진 업로드 (multipart/form-data, files 필드) (인증 필요)
- * DELETE /api/photos?filename=xxx - 사진 삭제 (인증 필요)
- * PATCH  /api/photos - 순서 변경 body: { filenames: string[] } (인증 필요)
+ * 관리자용 사진 관리 API. 모든 메서드는 Firebase Bearer ID 토큰 인증이 필요하다.
+ *
+ * - GET /api/photos
+ *   R2의 저장 순서와 캡션을 { items: [{ filename, caption, order }] }로 반환한다.
+ * - POST /api/photos
+ *   multipart/form-data의 `files` 필드로 받은 이미지들을 R2에 업로드하고 목록 끝에 추가한다.
+ * - DELETE /api/photos?filename=...
+ *   order.json의 목록/캡션과 실제 R2 이미지 객체를 함께 삭제한다.
+ * - PATCH /api/photos
+ *   `{ filenames: string[] }`은 전체 순서를 교체하고, `{ filename, caption }`은 캡션 하나를 바꾼다.
+ *
+ * 이미지 객체는 `<PORTFOLIO_PREFIX>/<filename>`에 저장한다. 목록/캡션의
+ * order.json key는 기존 배포 데이터까지 읽을 수 있도록 photos-r2.ts에서 결정한다.
  */
 
 import { verifyBearerToken } from '../../lib/verify-auth'
@@ -17,12 +26,12 @@ import {
 
 const IMAGE_EXT = /\.(webp|jpg|jpeg|png|gif)$/i
 
-/** 경로만 제거하여 원본 파일명 반환 (blob 저장용) */
+/** 브라우저가 파일명에 경로를 포함해 보내더라도 마지막 경로 조각만 남긴다. */
 function getOriginalFilename(name: string): string {
     return name.replace(/^.*[/\\]/, '').trim() || 'image'
 }
 
-/** 공백·특수문자 정규화. CDN/URL 호환을 위해 공백 → 하이픈 */
+/** CDN 경로에서 예측 가능하게 다룰 수 있도록 공백과 특수문자를 하이픈으로 정규화한다. */
 function sanitizeFilename(name: string): string {
     const base = name
         .replace(/\s+/g, '-')
@@ -32,7 +41,7 @@ function sanitizeFilename(name: string): string {
     return base || 'image'
 }
 
-/** 기존 목록에 없는 고유 파일명 반환 */
+/** 같은 이름이 있으면 `name (1).ext`, `name (2).ext` 형태의 빈 이름을 찾는다. */
 function uniqueFilename(base: string, existing: Set<string>): string {
     if (!existing.has(base)) return base
     const extMatch = base.match(IMAGE_EXT)
@@ -43,6 +52,10 @@ function uniqueFilename(base: string, existing: Set<string>): string {
     return `${stem} (${n})${ext}`
 }
 
+/**
+ * 이미지들을 차례로 업로드한 뒤 새 순서를 order.json에 한 번 저장한다.
+ * 성공 응답의 `uploaded`는 실제 저장에 사용한 중복 방지 파일명 목록이다.
+ */
 export const onRequestPost: PagesFunction<Env> = async (context) => {
     const auth = await verifyBearerToken(context.request, context.env as Env)
     if (!auth.allowed) return auth.response
@@ -92,6 +105,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return Response.json({ ok: true, uploaded, order: newOrderList })
 }
 
+/** 저장된 캡션이 없으면 파일명으로 기본 캡션을 만들어 관리자 목록을 반환한다. */
 export const onRequestGet: PagesFunction<Env> = async (context) => {
     const auth = await verifyBearerToken(context.request, context.env as Env)
     if (!auth.allowed) return auth.response
@@ -109,6 +123,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return Response.json({ items })
 }
 
+/** 목록에 존재하는 사진만 삭제하며, 목록 메타데이터와 R2 객체를 함께 정리한다. */
 export const onRequestDelete: PagesFunction<Env> = async (context) => {
     const auth = await verifyBearerToken(context.request, context.env as Env)
     if (!auth.allowed) return auth.response
@@ -139,6 +154,11 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
     return Response.json({ ok: true, order: nextList })
 }
 
+/**
+ * 하나의 PATCH 경로에서 캡션 수정과 순서 변경을 구분한다.
+ * `filename`과 `caption`이 있으면 캡션 수정으로 우선 처리하고, 그 외에는
+ * `filenames` 배열을 새 전체 순서로 저장한다.
+ */
 export const onRequestPatch: PagesFunction<Env> = async (context) => {
     const auth = await verifyBearerToken(context.request, context.env as Env)
     if (!auth.allowed) return auth.response
@@ -157,16 +177,19 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
     const env = context.env as Env
     const bucket = env.PORTFOLIO
 
-    // 캡션 수정: body에 filename + caption
+    // 캡션 수정 요청: 빈 문자열은 사용자 캡션을 제거해 파일명 기반 캡션으로 되돌린다.
     if (typeof body.filename === 'string' && body.caption !== undefined) {
         await setCaption(bucket, env, body.filename, String(body.caption))
         return Response.json({ ok: true })
     }
 
-    // 순서 변경: body에 filenames 배열
+    // 순서 변경 요청: 문자열 항목만 남긴 배열을 order.json의 새 기준 목록으로 사용한다.
     const raw = body.filenames
     if (!Array.isArray(raw)) {
-        return Response.json({ error: 'body.filenames 배열 또는 body.filename+caption이 필요합니다.' }, { status: 400 })
+        return Response.json(
+            { error: 'body.filenames 배열 또는 body.filename+caption이 필요합니다.' },
+            { status: 400 },
+        )
     }
     const filenames = raw.filter((x): x is string => typeof x === 'string')
     const { orderKey, captions } = await getOrderKeyAndList(bucket, env)

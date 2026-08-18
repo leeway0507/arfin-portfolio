@@ -8,7 +8,7 @@ export interface PhotoListItem {
     caption: string
     /** 노출 순서 (0부터) */
     order: number
-    /** 이미지 URL (NEXT_PUBLIC_IMAGE_URL + filename, CDN에서 직접 로드) */
+    /** 이미지 URL (운영은 R2 CDN, 로컬은 Pages Function 이미지 프록시) */
     imageUrl: string
     /** 낙관적 추가 후 실제 업로드 완료 전까지 true. 갤러리에서 로딩 오버레이 표시용 */
     isPendingUpload?: boolean

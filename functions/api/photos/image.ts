@@ -1,10 +1,17 @@
 /**
- * GET /api/photos/image?filename=xxx - R2 이미지 프록시 (인증 없음)
- * CDN 경로 불일치·로컬 개발 시 이미지를 API로 직접 서빙
+ * R2 이미지를 직접 내려주는 공개 프록시 API.
+ *
+ * - Route: GET /api/photos/image?filename=...
+ * - Auth: 없음
+ * - Response: R2 객체의 stream과 Content-Type (없으면 404)
+ *
+ * 별도 이미지 CDN을 사용할 수 없는 로컬 개발 환경과 CDN 경로가 맞지 않는
+ * 경우를 위한 경로다. 브라우저가 하루 동안 캐시하도록 Cache-Control을 설정한다.
  */
 
 import { getPrefix } from '../../lib/photos-r2'
 
+/** filename을 현재 prefix 아래의 R2 object key로 바꿔 이미지 본문을 스트리밍한다. */
 export const onRequestGet: PagesFunction<Env> = async (context) => {
     const filename = context.request.url
         ? new URL(context.request.url).searchParams.get('filename')
@@ -17,6 +24,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const bucket = env.PORTFOLIO
     const prefix = getPrefix(env)
     const objectKey = prefix ? prefix + filename : filename
+
+    console.log('hello')
 
     const obj = await bucket.get(objectKey)
     if (!obj?.body) {

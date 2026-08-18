@@ -1,9 +1,15 @@
 /**
- * Auth Callback - Firebase ID 토큰 검증 및 허용 계정 확인
+ * 로그인 직후 클라이언트가 관리자 허용 여부를 확인하는 API.
  *
- * POST /api/auth/callback
- * Body: { idToken: string }
- * Response: { allowed: boolean, email?: string, uid?: string } | { error: string }
+ * - Route: POST /api/auth/callback
+ * - Body: { idToken: string }
+ * - Success: { allowed: boolean, email?: string, uid?: string }
+ * - Error: { error: string }
+ *
+ * Firebase Identity Toolkit의 accounts:lookup으로 ID 토큰과 사용자를 확인한 뒤,
+ * 사용자 이메일을 `ALLOWED_ADMIN_EMAILS`의 쉼표 구분 목록과 대소문자 구분 없이
+ * 비교한다. 유효한 사용자지만 허용 목록에 없으면 HTTP 200과 `allowed: false`를
+ * 반환하며, Firebase 사용자 조회가 실패하면 401을 반환한다.
  */
 
 const FIREBASE_LOOKUP_URL = 'https://identitytoolkit.googleapis.com/v1/accounts:lookup'
@@ -35,6 +41,7 @@ interface CallbackErrorResponse {
     error: string
 }
 
+/** 환경 변수의 쉼표 구분 이메일을 비교 가능한 소문자 배열로 정규화한다. */
 function parseAllowedEmails(v: string | undefined): string[] {
     if (!v || typeof v !== 'string') return []
     return v
@@ -43,6 +50,7 @@ function parseAllowedEmails(v: string | undefined): string[] {
         .filter(Boolean)
 }
 
+/** Firebase 사용자 조회와 관리자 이메일 allowlist 확인을 순서대로 수행한다. */
 export const onRequestPost: PagesFunction<Env> = async (context) => {
     const env = context.env as Env
     const apiKey = env.FIREBASE_API_KEY
