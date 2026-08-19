@@ -530,10 +530,10 @@ function PhotographProjectWysiwygEditor({
             <div
                 className={cn(
                     'mx-auto overflow-hidden bg-white font-sans text-black shadow-[0_18px_60px_rgba(0,0,0,0.09)] transition-[width]',
-                    previewMode === 'pc' ? 'w-[1180px] max-w-none' : 'w-[390px] max-w-full',
+                    previewMode === 'pc' ? 'w-[1400px] max-w-none' : 'w-[390px] max-w-full',
                 )}
             >
-                <div className={cn('mx-auto', previewMode === 'pc' ? 'p-12' : 'px-5 py-8')}>
+                <div className={cn('mx-auto', previewMode === 'pc' ? 'p-8' : 'px-5 py-8')}>
                     <div className="relative">
                         <PhotographProjectLayout
                             textPosition={projectDraft.textPosition}
@@ -639,8 +639,15 @@ function PhotographProjectHeroEditor({
     isEditingDisabled,
     onSelectHeroImage,
 }: PhotographProjectHeroEditorProps) {
+    const isLandscapeImage = heroImage.width > heroImage.height
+
     return (
-        <figure className="group relative mx-auto w-full max-w-[32rem] overflow-hidden bg-muted">
+        <figure
+            className={cn(
+                'group relative mx-auto w-full overflow-hidden bg-muted',
+                isLandscapeImage ? 'max-w-[40rem]' : 'max-w-[24.5rem]',
+            )}
+        >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
                 src={buildR2ImageUrl(heroImage.objectKey)}

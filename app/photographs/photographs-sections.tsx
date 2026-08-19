@@ -11,6 +11,7 @@ import type {
     PhotographProject,
     PhotographSection,
 } from '@/lib/apis/photographs/types'
+import { cn } from '@/lib/utils'
 import { PhotographImageLightbox } from './components/photograph-image-lightbox'
 import { usePhotographCarouselActivity } from './hooks/use-photograph-carousel-activity'
 import { usePhotographCarouselLayoutMode } from './hooks/use-photograph-carousel-layout-mode'
@@ -88,7 +89,7 @@ export function PhotographsSections({ sections }: PhotographsSectionsProps) {
 function PhotographsPageFrame({ children }: { children: React.ReactNode }) {
     return (
         <main className="min-h-dvh overflow-hidden pb-28 pt-16 sm:pb-16">
-            <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-8">
+            <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-8">
                 <h1 className="sr-only">Photographs</h1>
                 {children}
             </div>
@@ -262,12 +263,18 @@ function PhotographProjectHeroImage({
     isPriority: boolean
     onOpenImage: (openerElement: HTMLButtonElement) => void
 }) {
+    const isLandscapeImage = image.width > image.height
     const handleOpenImage = (event: React.MouseEvent<HTMLButtonElement>) => {
         onOpenImage(event.currentTarget)
     }
 
     return (
-        <figure className="mx-auto w-full max-w-[24.5rem]">
+        <figure
+            className={cn(
+                'mx-auto w-full',
+                isLandscapeImage ? 'max-w-[40rem]' : 'max-w-[24.5rem]',
+            )}
+        >
             <button
                 type="button"
                 aria-label={`${image.alt} 대표 이미지 크게 보기`}
@@ -282,7 +289,11 @@ function PhotographProjectHeroImage({
                     className="pointer-events-none h-auto w-full select-none object-contain"
                     draggable={false}
                     priority={isPriority}
-                    sizes="(min-width: 896px) 392px, (min-width: 768px) calc((100vw - 7rem) / 2), (min-width: 424px) 392px, calc(100vw - 2rem)"
+                    sizes={
+                        isLandscapeImage
+                            ? '(min-width: 1392px) 640px, (min-width: 768px) calc((100vw - 7rem) / 2), (min-width: 704px) 640px, (min-width: 640px) calc(100vw - 4rem), calc(100vw - 2rem)'
+                            : '(min-width: 896px) 392px, (min-width: 768px) calc((100vw - 7rem) / 2), (min-width: 424px) 392px, calc(100vw - 2rem)'
+                    }
                 />
                 <PhotographImageExpandHint />
             </button>
